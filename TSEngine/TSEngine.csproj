@@ -104,13 +104,14 @@
     <TypeScriptCompile Include="core\gl\gl.ts" />
     <TypeScriptCompile Include="core\gl\glBuffer.ts" />
     <TypeScriptCompile Include="core\gl\shader.ts" />
+    <TypeScriptCompile Include="core\graphics\sprite.ts" />
+    <TypeScriptCompile Include="core\math\matrix4x4.ts" />
+    <TypeScriptCompile Include="core\math\vector3.ts" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="core\graphics\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
