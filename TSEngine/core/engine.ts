@@ -48,7 +48,8 @@
                 this._canvas.width = window.innerWidth;
                 this._canvas.height = window.innerHeight;
 
-                gl.viewport( -1, 1, -1, 1 );
+                // Not actually needed at the moment
+                //gl.viewport( 0, 0, gl.canvas.width, gl.canvas.height );
             }
         }
 

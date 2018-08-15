@@ -41,7 +41,8 @@ var TSE;
             if (this._canvas !== undefined) {
                 this._canvas.width = window.innerWidth;
                 this._canvas.height = window.innerHeight;
-                TSE.gl.viewport(-1, 1, -1, 1);
+                // Not actually needed at the moment
+                //gl.viewport( 0, 0, gl.canvas.width, gl.canvas.height );
             }
         };
         Engine.prototype.loop = function () {
@@ -544,5 +545,289 @@ var TSE;
         return Vector3;
     }());
     TSE.Vector3 = Vector3;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    TSE.MESSAGE_ASSET_LOADER_ASSET_LOADED = "MESSAGE_ASSET_LOADER_ASSET_LOADED::";
+    /** Manages all assets in the engine. */
+    var AssetManager = /** @class */ (function () {
+        /** Private to enforce static method calls and prevent instantiation. */
+        function AssetManager() {
+        }
+        /** Initializes this manager. */
+        AssetManager.initialize = function () {
+            AssetManager._loaders.push(new TSE.ImageAssetLoader());
+        };
+        /**
+         * Registers the provided loader with this asset manager.
+         * @param loader The loader to be registered.
+         */
+        AssetManager.registerLoader = function (loader) {
+            AssetManager._loaders.push(loader);
+        };
+        /**
+         * A callback to be made from an asset loader when an asset is loaded.
+         * @param asset
+         */
+        AssetManager.onAssetLoaded = function (asset) {
+            AssetManager._loadedAssets[asset.name] = asset;
+            TSE.Message.send(TSE.MESSAGE_ASSET_LOADER_ASSET_LOADED + asset.name, this, asset);
+        };
+        /**
+         * Attempts to load an asset using a registered asset loader.
+         * @param assetName The name/url of the asset to be loaded.
+         */
+        AssetManager.loadAsset = function (assetName) {
+            var extension = assetName.split('.').pop().toLowerCase();
+            for (var _i = 0, _a = AssetManager._loaders; _i < _a.length; _i++) {
+                var l = _a[_i];
+                if (l.supportedExtensions.indexOf(extension) !== -1) {
+                    l.loadAsset(assetName);
+                    return;
+                }
+            }
+            console.warn("Unable to load asset with extension " + extension + " because there is no loader associated with it.");
+        };
+        /**
+         * Indicates if an asset with the provided name has been loaded.
+         * @param assetName The asset name to check.
+         */
+        AssetManager.isAssetLoaded = function (assetName) {
+            return AssetManager._loadedAssets[assetName] !== undefined;
+        };
+        /**
+         * Attempts to get an asset with the provided name. If found, it is returned; otherwise, undefined is returned.
+         * @param assetName The asset name to get.
+         */
+        AssetManager.getAsset = function (assetName) {
+            if (AssetManager._loadedAssets[assetName] !== undefined) {
+                return AssetManager._loadedAssets[assetName];
+            }
+            else {
+                AssetManager.loadAsset(assetName);
+            }
+            return undefined;
+        };
+        AssetManager._loaders = [];
+        AssetManager._loadedAssets = {};
+        return AssetManager;
+    }());
+    TSE.AssetManager = AssetManager;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    /** Represents message priorities. */
+    var MessagePriority;
+    (function (MessagePriority) {
+        /** Normal message priority, meaning the message is sent as soon as the queue allows. */
+        MessagePriority[MessagePriority["NORMAL"] = 0] = "NORMAL";
+        /** High message priority, meaning the message is sent immediately. */
+        MessagePriority[MessagePriority["HIGH"] = 1] = "HIGH";
+    })(MessagePriority = TSE.MessagePriority || (TSE.MessagePriority = {}));
+    /** Represents a message which can be sent and processed across the system. */
+    var Message = /** @class */ (function () {
+        /**
+         * Creates a new message.
+         * @param code The code for this message, which is subscribed to and listened for.
+         * @param sender The class instance which sent this message.
+         * @param context Free-form context data to be included with this message.
+         * @param priority The priority of this message.
+         */
+        function Message(code, sender, context, priority) {
+            if (priority === void 0) { priority = MessagePriority.NORMAL; }
+            this.code = code;
+            this.sender = sender;
+            this.context = context;
+            this.priority = priority;
+        }
+        /**
+         * Sends a normal-priority message with the provided parameters.
+         * @param code The code for this message, which is subscribed to and listened for.
+         * @param sender The class instance which sent this message.
+         * @param context Free-form context data to be included with this message.
+         */
+        Message.send = function (code, sender, context) {
+            TSE.MessageBus.post(new Message(code, sender, context, MessagePriority.NORMAL));
+        };
+        /**
+         * Sends a high-priority message with the provided parameters.
+         * @param code The code for this message, which is subscribed to and listened for.
+         * @param sender The class instance which sent this message.
+         * @param context Free-form context data to be included with this message.
+         */
+        Message.sendPriority = function (code, sender, context) {
+            TSE.MessageBus.post(new Message(code, sender, context, MessagePriority.HIGH));
+        };
+        /**
+         * Subscribes the provided handler to listen for the message code provided.
+         * @param code The code to listen for.
+         * @param handler The message handler to be called when a message containing the provided code is sent.
+         */
+        Message.subscribe = function (code, handler) {
+            TSE.MessageBus.addSubscription(code, handler);
+        };
+        /**
+         * Unsubscribes the provided handler from listening for the message code provided.
+         * @param code The code to no longer listen for.
+         * @param handler The message handler to unsubscribe.
+         */
+        Message.unsubscribe = function (code, handler) {
+            TSE.MessageBus.removeSubscription(code, handler);
+        };
+        return Message;
+    }());
+    TSE.Message = Message;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    /** The message manager responsible for sending messages across the system. */
+    var MessageBus = /** @class */ (function () {
+        /** Constructor hidden to prevent instantiation. */
+        function MessageBus() {
+        }
+        /**
+         * Adds a subscription to the provided code using the provided handler.
+         * @param code The code to listen for.
+         * @param handler The handler to be subscribed.
+         */
+        MessageBus.addSubscription = function (code, handler) {
+            if (MessageBus._subscriptions[code] !== undefined) {
+                MessageBus._subscriptions[code] = [];
+            }
+            if (MessageBus._subscriptions[code].indexOf(handler) !== -1) {
+                console.warn("Attempting to add a duplicate handler to code: " + code + ". Subscription not added.");
+            }
+            else {
+                MessageBus._subscriptions[code].push(handler);
+            }
+        };
+        /**
+         * Removes a subscription to the provided code using the provided handler.
+         * @param code The code to no longer listen for.
+         * @param handler The handler to be unsubscribed.
+         */
+        MessageBus.removeSubscription = function (code, handler) {
+            if (MessageBus._subscriptions[code] === undefined) {
+                console.warn("Cannot unsubscribe handler from code: " + code + " Because that code is not subscribed to.");
+                return;
+            }
+            var nodeIndex = MessageBus._subscriptions[code].indexOf(handler);
+            if (nodeIndex !== -1) {
+                MessageBus._subscriptions[code].splice(nodeIndex, 1);
+            }
+        };
+        /**
+         * Posts the provided message to the message system.
+         * @param message The message to be sent.
+         */
+        MessageBus.post = function (message) {
+            console.log("Message posted:", message);
+            var handlers = MessageBus._subscriptions[message.code];
+            if (handlers === undefined) {
+                return;
+            }
+            for (var _i = 0, handlers_1 = handlers; _i < handlers_1.length; _i++) {
+                var h = handlers_1[_i];
+                if (message.priority === TSE.MessagePriority.HIGH) {
+                    h.onMessage(message);
+                }
+                else {
+                    MessageBus._normalMessageQueue.push(new TSE.MessageSubscriptionNode(message, h));
+                }
+            }
+        };
+        /**
+         * Performs update routines on this message bus.
+         * @param time The delta time in milliseconds since the last update.
+         */
+        MessageBus.update = function (time) {
+            if (MessageBus._normalMessageQueue.length === 0) {
+                return;
+            }
+            var messageLimit = Math.min(MessageBus._normalQueueMessagePerUpdate, MessageBus._normalMessageQueue.length);
+            for (var i = 0; i < messageLimit; ++i) {
+                var node = MessageBus._normalMessageQueue.pop();
+                node.handler.onMessage(node.message);
+            }
+        };
+        MessageBus._subscriptions = {};
+        MessageBus._normalQueueMessagePerUpdate = 10;
+        MessageBus._normalMessageQueue = [];
+        return MessageBus;
+    }());
+    TSE.MessageBus = MessageBus;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var MessageSubscriptionNode = /** @class */ (function () {
+        function MessageSubscriptionNode(message, handler) {
+            this.message = message;
+            this.handler = handler;
+        }
+        return MessageSubscriptionNode;
+    }());
+    TSE.MessageSubscriptionNode = MessageSubscriptionNode;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    /** Represents an image asset */
+    var ImageAsset = /** @class */ (function () {
+        /**
+         * Creates a new image asset.
+         * @param name The name of this asset.
+         * @param data The data of this asset.
+         */
+        function ImageAsset(name, data) {
+            this.name = name;
+            this.data = data;
+        }
+        Object.defineProperty(ImageAsset.prototype, "width", {
+            /** The width of this image asset. */
+            get: function () {
+                return this.data.width;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ImageAsset.prototype, "height", {
+            /** The height of this image asset. */
+            get: function () {
+                return this.data.height;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return ImageAsset;
+    }());
+    TSE.ImageAsset = ImageAsset;
+    /** Represents an image asset loader. */
+    var ImageAssetLoader = /** @class */ (function () {
+        function ImageAssetLoader() {
+        }
+        Object.defineProperty(ImageAssetLoader.prototype, "supportedExtensions", {
+            /** The extensions supported by this asset loader. */
+            get: function () {
+                return ["png", "gif", "jpg"];
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Loads an asset with the given name.
+         * @param assetName The name of the asset to be loaded.
+         */
+        ImageAssetLoader.prototype.loadAsset = function (assetName) {
+            var image = new Image();
+            image.onload = this.onImageLoaded.bind(this, assetName, image);
+            image.src = assetName;
+        };
+        ImageAssetLoader.prototype.onImageLoaded = function (assetName, image) {
+            console.log("onImageLoaded: assetName/image", assetName, image);
+            var asset = new ImageAsset(assetName, image);
+            TSE.AssetManager.onAssetLoaded(asset);
+        };
+        return ImageAssetLoader;
+    }());
+    TSE.ImageAssetLoader = ImageAssetLoader;
 })(TSE || (TSE = {}));
 //# sourceMappingURL=main.js.map
