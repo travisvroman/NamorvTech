@@ -9,6 +9,136 @@ window.onresize = function () {
 };
 var TSE;
 (function (TSE) {
+    TSE.MESSAGE_ASSET_LOADER_ASSET_LOADED = "MESSAGE_ASSET_LOADER_ASSET_LOADED::";
+    /** Manages all assets in the engine. */
+    var AssetManager = /** @class */ (function () {
+        /** Private to enforce static method calls and prevent instantiation. */
+        function AssetManager() {
+        }
+        /** Initializes this manager. */
+        AssetManager.initialize = function () {
+            AssetManager._loaders.push(new TSE.ImageAssetLoader());
+        };
+        /**
+         * Registers the provided loader with this asset manager.
+         * @param loader The loader to be registered.
+         */
+        AssetManager.registerLoader = function (loader) {
+            AssetManager._loaders.push(loader);
+        };
+        /**
+         * A callback to be made from an asset loader when an asset is loaded.
+         * @param asset
+         */
+        AssetManager.onAssetLoaded = function (asset) {
+            AssetManager._loadedAssets[asset.name] = asset;
+            TSE.Message.send(TSE.MESSAGE_ASSET_LOADER_ASSET_LOADED + asset.name, this, asset);
+        };
+        /**
+         * Attempts to load an asset using a registered asset loader.
+         * @param assetName The name/url of the asset to be loaded.
+         */
+        AssetManager.loadAsset = function (assetName) {
+            var extension = assetName.split('.').pop().toLowerCase();
+            for (var _i = 0, _a = AssetManager._loaders; _i < _a.length; _i++) {
+                var l = _a[_i];
+                if (l.supportedExtensions.indexOf(extension) !== -1) {
+                    l.loadAsset(assetName);
+                    return;
+                }
+            }
+            console.warn("Unable to load asset with extension " + extension + " because there is no loader associated with it.");
+        };
+        /**
+         * Indicates if an asset with the provided name has been loaded.
+         * @param assetName The asset name to check.
+         */
+        AssetManager.isAssetLoaded = function (assetName) {
+            return AssetManager._loadedAssets[assetName] !== undefined;
+        };
+        /**
+         * Attempts to get an asset with the provided name. If found, it is returned; otherwise, undefined is returned.
+         * @param assetName The asset name to get.
+         */
+        AssetManager.getAsset = function (assetName) {
+            if (AssetManager._loadedAssets[assetName] !== undefined) {
+                return AssetManager._loadedAssets[assetName];
+            }
+            else {
+                AssetManager.loadAsset(assetName);
+            }
+            return undefined;
+        };
+        AssetManager._loaders = [];
+        AssetManager._loadedAssets = {};
+        return AssetManager;
+    }());
+    TSE.AssetManager = AssetManager;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    /** Represents an image asset */
+    var ImageAsset = /** @class */ (function () {
+        /**
+         * Creates a new image asset.
+         * @param name The name of this asset.
+         * @param data The data of this asset.
+         */
+        function ImageAsset(name, data) {
+            this.name = name;
+            this.data = data;
+        }
+        Object.defineProperty(ImageAsset.prototype, "width", {
+            /** The width of this image asset. */
+            get: function () {
+                return this.data.width;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ImageAsset.prototype, "height", {
+            /** The height of this image asset. */
+            get: function () {
+                return this.data.height;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return ImageAsset;
+    }());
+    TSE.ImageAsset = ImageAsset;
+    /** Represents an image asset loader. */
+    var ImageAssetLoader = /** @class */ (function () {
+        function ImageAssetLoader() {
+        }
+        Object.defineProperty(ImageAssetLoader.prototype, "supportedExtensions", {
+            /** The extensions supported by this asset loader. */
+            get: function () {
+                return ["png", "gif", "jpg"];
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Loads an asset with the given name.
+         * @param assetName The name of the asset to be loaded.
+         */
+        ImageAssetLoader.prototype.loadAsset = function (assetName) {
+            var image = new Image();
+            image.onload = this.onImageLoaded.bind(this, assetName, image);
+            image.src = assetName;
+        };
+        ImageAssetLoader.prototype.onImageLoaded = function (assetName, image) {
+            console.log("onImageLoaded: assetName/image", assetName, image);
+            var asset = new ImageAsset(assetName, image);
+            TSE.AssetManager.onAssetLoaded(asset);
+        };
+        return ImageAssetLoader;
+    }());
+    TSE.ImageAssetLoader = ImageAssetLoader;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
     /**
      * The main game engine class.
      * */
@@ -23,12 +153,13 @@ var TSE;
          * */
         Engine.prototype.start = function () {
             this._canvas = TSE.GLUtilities.initialize();
+            TSE.AssetManager.initialize();
             TSE.gl.clearColor(0, 0, 0, 1);
             this.loadShaders();
             this._shader.use();
             // Load
             this._projection = TSE.Matrix4x4.orthographic(0, this._canvas.width, 0, this._canvas.height, -100.0, 100.0);
-            this._sprite = new TSE.Sprite("test");
+            this._sprite = new TSE.Sprite("test", "assets/textures/crate.jpg");
             this._sprite.load();
             this._sprite.position.x = 200;
             this.resize();
@@ -46,21 +177,23 @@ var TSE;
             }
         };
         Engine.prototype.loop = function () {
+            TSE.MessageBus.update(0);
             TSE.gl.clear(TSE.gl.COLOR_BUFFER_BIT);
             // Set uniforms.
-            var colorPosition = this._shader.getUniformLocation("u_color");
+            var colorPosition = this._shader.getUniformLocation("u_tint");
             TSE.gl.uniform4f(colorPosition, 1, 0.5, 0, 1);
+            //gl.uniform4f( colorPosition, 1, 1, 1, 1 );
             var projectionPosition = this._shader.getUniformLocation("u_projection");
             TSE.gl.uniformMatrix4fv(projectionPosition, false, new Float32Array(this._projection.data));
             var modelLocation = this._shader.getUniformLocation("u_model");
             TSE.gl.uniformMatrix4fv(modelLocation, false, new Float32Array(TSE.Matrix4x4.translation(this._sprite.position).data));
             //
-            this._sprite.draw();
+            this._sprite.draw(this._shader);
             requestAnimationFrame(this.loop.bind(this));
         };
         Engine.prototype.loadShaders = function () {
-            var vertexShaderSource = "\nattribute vec3 a_position;\n\nuniform mat4 u_projection;\nuniform mat4 u_model;\n\nvoid main() {\n    gl_Position = u_projection * u_model * vec4(a_position, 1.0);\n}";
-            var fragmentShaderSource = "\nprecision mediump float;\n\nuniform vec4 u_color;\n\nvoid main() {\n    gl_FragColor = u_color;\n}\n";
+            var vertexShaderSource = "\nattribute vec3 a_position;\nattribute vec2 a_texCoord;\n\nuniform mat4 u_projection;\nuniform mat4 u_model;\n\nvarying vec2 v_texCoord;\n\nvoid main() {\n    gl_Position = u_projection * u_model * vec4(a_position, 1.0);\n    v_texCoord = a_texCoord;\n}";
+            var fragmentShaderSource = "\nprecision mediump float;\n\nuniform vec4 u_tint;\nuniform sampler2D u_diffuse;\n\nvarying vec2 v_texCoord;\n\nvoid main() {\n    gl_FragColor = u_tint * texture2D(u_diffuse, v_texCoord);\n}\n";
             this._shader = new TSE.Shader("basic", vertexShaderSource, fragmentShaderSource);
         };
         return Engine;
@@ -361,10 +494,11 @@ var TSE;
         /**
          * Creates a new sprite.
          * @param name The name of this sprite.
+         * @param textureName The name of the texture to use with this sprite.
          * @param width The width of this sprite.
          * @param height The height of this sprite.
          */
-        function Sprite(name, width, height) {
+        function Sprite(name, textureName, width, height) {
             if (width === void 0) { width = 100; }
             if (height === void 0) { height = 100; }
             /**
@@ -374,25 +508,43 @@ var TSE;
             this._name = name;
             this._width = width;
             this._height = height;
+            this._textureName = textureName;
+            this._texture = TSE.TextureManager.getTexture(this._textureName);
         }
+        Object.defineProperty(Sprite.prototype, "name", {
+            get: function () {
+                return this._name;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Sprite.prototype.destroy = function () {
+            this._buffer.destroy();
+            TSE.TextureManager.releaseTexture(this._textureName);
+        };
         /**
          * Performs loading routines on this sprite.
          * */
         Sprite.prototype.load = function () {
-            this._buffer = new TSE.GLBuffer(3);
+            this._buffer = new TSE.GLBuffer(5);
             var positionAttribute = new TSE.AttributeInfo();
             positionAttribute.location = 0;
             positionAttribute.offset = 0;
             positionAttribute.size = 3;
             this._buffer.addAttributeLocation(positionAttribute);
+            var texCoordAttribute = new TSE.AttributeInfo();
+            texCoordAttribute.location = 1;
+            texCoordAttribute.offset = 3;
+            texCoordAttribute.size = 2;
+            this._buffer.addAttributeLocation(texCoordAttribute);
             var vertices = [
-                // x,y,z
-                0, 0, 0,
-                0, this._height, 0,
-                this._width, this._height, 0,
-                this._width, this._height, 0,
-                this._width, 0, 0,
-                0, 0, 0
+                // x,y,z   ,u, v
+                0, 0, 0, 0, 0,
+                0, this._height, 0, 0, 1.0,
+                this._width, this._height, 0, 1.0, 1.0,
+                this._width, this._height, 0, 1.0, 1.0,
+                this._width, 0, 0, 1.0, 0,
+                0, 0, 0, 0, 0
             ];
             this._buffer.pushBackData(vertices);
             this._buffer.upload();
@@ -405,7 +557,10 @@ var TSE;
         Sprite.prototype.update = function (time) {
         };
         /** Draws this sprite. */
-        Sprite.prototype.draw = function () {
+        Sprite.prototype.draw = function (shader) {
+            this._texture.activateAndBind(0);
+            var diffuseLocation = shader.getUniformLocation("u_diffuse");
+            TSE.gl.uniform1i(diffuseLocation, 0);
             this._buffer.bind();
             this._buffer.draw();
         };
@@ -548,74 +703,6 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    TSE.MESSAGE_ASSET_LOADER_ASSET_LOADED = "MESSAGE_ASSET_LOADER_ASSET_LOADED::";
-    /** Manages all assets in the engine. */
-    var AssetManager = /** @class */ (function () {
-        /** Private to enforce static method calls and prevent instantiation. */
-        function AssetManager() {
-        }
-        /** Initializes this manager. */
-        AssetManager.initialize = function () {
-            AssetManager._loaders.push(new TSE.ImageAssetLoader());
-        };
-        /**
-         * Registers the provided loader with this asset manager.
-         * @param loader The loader to be registered.
-         */
-        AssetManager.registerLoader = function (loader) {
-            AssetManager._loaders.push(loader);
-        };
-        /**
-         * A callback to be made from an asset loader when an asset is loaded.
-         * @param asset
-         */
-        AssetManager.onAssetLoaded = function (asset) {
-            AssetManager._loadedAssets[asset.name] = asset;
-            TSE.Message.send(TSE.MESSAGE_ASSET_LOADER_ASSET_LOADED + asset.name, this, asset);
-        };
-        /**
-         * Attempts to load an asset using a registered asset loader.
-         * @param assetName The name/url of the asset to be loaded.
-         */
-        AssetManager.loadAsset = function (assetName) {
-            var extension = assetName.split('.').pop().toLowerCase();
-            for (var _i = 0, _a = AssetManager._loaders; _i < _a.length; _i++) {
-                var l = _a[_i];
-                if (l.supportedExtensions.indexOf(extension) !== -1) {
-                    l.loadAsset(assetName);
-                    return;
-                }
-            }
-            console.warn("Unable to load asset with extension " + extension + " because there is no loader associated with it.");
-        };
-        /**
-         * Indicates if an asset with the provided name has been loaded.
-         * @param assetName The asset name to check.
-         */
-        AssetManager.isAssetLoaded = function (assetName) {
-            return AssetManager._loadedAssets[assetName] !== undefined;
-        };
-        /**
-         * Attempts to get an asset with the provided name. If found, it is returned; otherwise, undefined is returned.
-         * @param assetName The asset name to get.
-         */
-        AssetManager.getAsset = function (assetName) {
-            if (AssetManager._loadedAssets[assetName] !== undefined) {
-                return AssetManager._loadedAssets[assetName];
-            }
-            else {
-                AssetManager.loadAsset(assetName);
-            }
-            return undefined;
-        };
-        AssetManager._loaders = [];
-        AssetManager._loadedAssets = {};
-        return AssetManager;
-    }());
-    TSE.AssetManager = AssetManager;
-})(TSE || (TSE = {}));
-var TSE;
-(function (TSE) {
     /** Represents message priorities. */
     var MessagePriority;
     (function (MessagePriority) {
@@ -691,7 +778,7 @@ var TSE;
          * @param handler The handler to be subscribed.
          */
         MessageBus.addSubscription = function (code, handler) {
-            if (MessageBus._subscriptions[code] !== undefined) {
+            if (MessageBus._subscriptions[code] === undefined) {
                 MessageBus._subscriptions[code] = [];
             }
             if (MessageBus._subscriptions[code].indexOf(handler) !== -1) {
@@ -770,64 +857,188 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    /** Represents an image asset */
-    var ImageAsset = /** @class */ (function () {
+    /** Represents a 2-component vector. */
+    var Vector2 = /** @class */ (function () {
         /**
-         * Creates a new image asset.
-         * @param name The name of this asset.
-         * @param data The data of this asset.
+         * Creates a new vector 2.
+         * @param x The x component.
+         * @param y The y component.
          */
-        function ImageAsset(name, data) {
-            this.name = name;
-            this.data = data;
+        function Vector2(x, y) {
+            if (x === void 0) { x = 0; }
+            if (y === void 0) { y = 0; }
+            this._x = x;
+            this._y = y;
         }
-        Object.defineProperty(ImageAsset.prototype, "width", {
-            /** The width of this image asset. */
+        Object.defineProperty(Vector2.prototype, "x", {
+            /** The x component. */
             get: function () {
-                return this.data.width;
+                return this._x;
+            },
+            /** The x component. */
+            set: function (value) {
+                this._x = value;
             },
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ImageAsset.prototype, "height", {
-            /** The height of this image asset. */
+        Object.defineProperty(Vector2.prototype, "y", {
+            /** The y component. */
             get: function () {
-                return this.data.height;
+                return this._y;
+            },
+            /** The y component. */
+            set: function (value) {
+                this._y = value;
             },
             enumerable: true,
             configurable: true
         });
-        return ImageAsset;
+        /** Returns the data of this vector as a number array. */
+        Vector2.prototype.toArray = function () {
+            return [this._x, this._y];
+        };
+        /** Returns the data of this vector as a Float32Array. */
+        Vector2.prototype.toFloat32Array = function () {
+            return new Float32Array(this.toArray());
+        };
+        return Vector2;
     }());
-    TSE.ImageAsset = ImageAsset;
-    /** Represents an image asset loader. */
-    var ImageAssetLoader = /** @class */ (function () {
-        function ImageAssetLoader() {
+    TSE.Vector2 = Vector2;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var LEVEL = 0;
+    var BORDER = 0;
+    var TEMP_IMAGE_DATA = new Uint8Array([255, 255, 255, 255]);
+    var Texture = /** @class */ (function () {
+        function Texture(name, width, height) {
+            if (width === void 0) { width = 1; }
+            if (height === void 0) { height = 1; }
+            this._isLoaded = false;
+            this._name = name;
+            this._width = width;
+            this._height = height;
+            this._handle = TSE.gl.createTexture();
+            TSE.Message.subscribe(TSE.MESSAGE_ASSET_LOADER_ASSET_LOADED + this._name, this);
+            this.bind();
+            TSE.gl.texImage2D(TSE.gl.TEXTURE_2D, LEVEL, TSE.gl.RGBA, 1, 1, BORDER, TSE.gl.RGBA, TSE.gl.UNSIGNED_BYTE, TEMP_IMAGE_DATA);
+            var asset = TSE.AssetManager.getAsset(this.name);
+            if (asset !== undefined) {
+                this.loadTextureFromAsset(asset);
+            }
         }
-        Object.defineProperty(ImageAssetLoader.prototype, "supportedExtensions", {
-            /** The extensions supported by this asset loader. */
+        Object.defineProperty(Texture.prototype, "name", {
             get: function () {
-                return ["png", "gif", "jpg"];
+                return this._name;
             },
             enumerable: true,
             configurable: true
         });
-        /**
-         * Loads an asset with the given name.
-         * @param assetName The name of the asset to be loaded.
-         */
-        ImageAssetLoader.prototype.loadAsset = function (assetName) {
-            var image = new Image();
-            image.onload = this.onImageLoaded.bind(this, assetName, image);
-            image.src = assetName;
+        Object.defineProperty(Texture.prototype, "isLoaded", {
+            get: function () {
+                return this._isLoaded;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Texture.prototype, "width", {
+            get: function () {
+                return this._width;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Texture.prototype, "height", {
+            get: function () {
+                return this._height;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Texture.prototype.destroy = function () {
+            TSE.gl.deleteTexture(this._handle);
         };
-        ImageAssetLoader.prototype.onImageLoaded = function (assetName, image) {
-            console.log("onImageLoaded: assetName/image", assetName, image);
-            var asset = new ImageAsset(assetName, image);
-            TSE.AssetManager.onAssetLoaded(asset);
+        Texture.prototype.activateAndBind = function (textureUnit) {
+            if (textureUnit === void 0) { textureUnit = 0; }
+            TSE.gl.activeTexture(TSE.gl.TEXTURE0 + textureUnit);
+            this.bind();
         };
-        return ImageAssetLoader;
+        Texture.prototype.bind = function () {
+            TSE.gl.bindTexture(TSE.gl.TEXTURE_2D, this._handle);
+        };
+        Texture.prototype.unbind = function () {
+            TSE.gl.bindTexture(TSE.gl.TEXTURE_2D, undefined);
+        };
+        Texture.prototype.onMessage = function (message) {
+            if (message.code === TSE.MESSAGE_ASSET_LOADER_ASSET_LOADED + this._name) {
+                this.loadTextureFromAsset(message.context);
+            }
+        };
+        Texture.prototype.loadTextureFromAsset = function (asset) {
+            this._width = asset.width;
+            this._height = asset.height;
+            this.bind();
+            TSE.gl.texImage2D(TSE.gl.TEXTURE_2D, LEVEL, TSE.gl.RGBA, TSE.gl.RGBA, TSE.gl.UNSIGNED_BYTE, asset.data);
+            if (this.isPowerof2()) {
+                TSE.gl.generateMipmap(TSE.gl.TEXTURE_2D);
+            }
+            else {
+                // Do not generate a mip map and clamp wrapping to edge.
+                TSE.gl.texParameteri(TSE.gl.TEXTURE_2D, TSE.gl.TEXTURE_WRAP_S, TSE.gl.CLAMP_TO_EDGE);
+                TSE.gl.texParameteri(TSE.gl.TEXTURE_2D, TSE.gl.TEXTURE_WRAP_T, TSE.gl.CLAMP_TO_EDGE);
+                TSE.gl.texParameteri(TSE.gl.TEXTURE_2D, TSE.gl.TEXTURE_MIN_FILTER, TSE.gl.LINEAR);
+            }
+            this._isLoaded = true;
+        };
+        Texture.prototype.isPowerof2 = function () {
+            return (this.isValuePowerOf2(this._width) && this.isValuePowerOf2(this.height));
+        };
+        Texture.prototype.isValuePowerOf2 = function (value) {
+            return (value & (value - 1)) == 0;
+        };
+        return Texture;
     }());
-    TSE.ImageAssetLoader = ImageAssetLoader;
+    TSE.Texture = Texture;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var TextureReferenceNode = /** @class */ (function () {
+        function TextureReferenceNode(texture) {
+            this.referenceCount = 1;
+            this.texture = texture;
+        }
+        return TextureReferenceNode;
+    }());
+    var TextureManager = /** @class */ (function () {
+        function TextureManager() {
+        }
+        TextureManager.getTexture = function (textureName) {
+            if (TextureManager._textures[textureName] === undefined) {
+                var texture = new TSE.Texture(textureName);
+                TextureManager._textures[textureName] = new TextureReferenceNode(texture);
+            }
+            else {
+                TextureManager._textures[textureName].referenceCount++;
+            }
+            return TextureManager._textures[textureName].texture;
+        };
+        TextureManager.releaseTexture = function (textureName) {
+            if (TextureManager._textures[textureName] === undefined) {
+                console.warn("A texture named " + textureName + " does not exist and therefore cannot be released.");
+            }
+            else {
+                TextureManager._textures[textureName].referenceCount--;
+                if (TextureManager._textures[textureName].referenceCount < 1) {
+                    TextureManager._textures[textureName].texture.destroy();
+                    TextureManager._textures[textureName] = undefined;
+                    delete TextureManager._textures[textureName];
+                }
+            }
+        };
+        TextureManager._textures = {};
+        return TextureManager;
+    }());
+    TSE.TextureManager = TextureManager;
 })(TSE || (TSE = {}));
 //# sourceMappingURL=main.js.map
