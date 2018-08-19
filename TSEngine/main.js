@@ -1,3 +1,16 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    }
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var engine;
 // The main entry point to the application.
 window.onload = function () {
@@ -155,13 +168,16 @@ var TSE;
             this._canvas = TSE.GLUtilities.initialize();
             TSE.AssetManager.initialize();
             TSE.gl.clearColor(0, 0, 0, 1);
-            this.loadShaders();
-            this._shader.use();
+            this._basicShader = new TSE.BasicShader();
+            this._basicShader.use();
+            // Load materials
+            TSE.MaterialManager.registerMaterial(new TSE.Material("crate", "assets/textures/crate.jpg", new TSE.Color(0, 128, 255, 255)));
             // Load
-            this._projection = TSE.Matrix4x4.orthographic(0, this._canvas.width, 0, this._canvas.height, -100.0, 100.0);
-            this._sprite = new TSE.Sprite("test", "assets/textures/crate.jpg");
+            this._projection = TSE.Matrix4x4.orthographic(0, this._canvas.width, this._canvas.height, 0, -100.0, 100.0);
+            this._sprite = new TSE.Sprite("test", "crate");
             this._sprite.load();
             this._sprite.position.x = 200;
+            this._sprite.position.y = 100;
             this.resize();
             this.loop();
         };
@@ -172,29 +188,19 @@ var TSE;
             if (this._canvas !== undefined) {
                 this._canvas.width = window.innerWidth;
                 this._canvas.height = window.innerHeight;
-                // Not actually needed at the moment
-                //gl.viewport( 0, 0, gl.canvas.width, gl.canvas.height );
+                TSE.gl.viewport(0, 0, TSE.gl.canvas.width, TSE.gl.canvas.height);
+                this._projection = TSE.Matrix4x4.orthographic(0, this._canvas.width, this._canvas.height, 0, -100.0, 100.0);
             }
         };
         Engine.prototype.loop = function () {
             TSE.MessageBus.update(0);
             TSE.gl.clear(TSE.gl.COLOR_BUFFER_BIT);
             // Set uniforms.
-            var colorPosition = this._shader.getUniformLocation("u_tint");
-            TSE.gl.uniform4f(colorPosition, 1, 0.5, 0, 1);
-            //gl.uniform4f( colorPosition, 1, 1, 1, 1 );
-            var projectionPosition = this._shader.getUniformLocation("u_projection");
+            var projectionPosition = this._basicShader.getUniformLocation("u_projection");
             TSE.gl.uniformMatrix4fv(projectionPosition, false, new Float32Array(this._projection.data));
-            var modelLocation = this._shader.getUniformLocation("u_model");
-            TSE.gl.uniformMatrix4fv(modelLocation, false, new Float32Array(TSE.Matrix4x4.translation(this._sprite.position).data));
             //
-            this._sprite.draw(this._shader);
+            this._sprite.draw(this._basicShader);
             requestAnimationFrame(this.loop.bind(this));
-        };
-        Engine.prototype.loadShaders = function () {
-            var vertexShaderSource = "\nattribute vec3 a_position;\nattribute vec2 a_texCoord;\n\nuniform mat4 u_projection;\nuniform mat4 u_model;\n\nvarying vec2 v_texCoord;\n\nvoid main() {\n    gl_Position = u_projection * u_model * vec4(a_position, 1.0);\n    v_texCoord = a_texCoord;\n}";
-            var fragmentShaderSource = "\nprecision mediump float;\n\nuniform vec4 u_tint;\nuniform sampler2D u_diffuse;\n\nvarying vec2 v_texCoord;\n\nvoid main() {\n    gl_FragColor = u_tint * texture2D(u_diffuse, v_texCoord);\n}\n";
-            this._shader = new TSE.Shader("basic", vertexShaderSource, fragmentShaderSource);
         };
         return Engine;
     }());
@@ -392,18 +398,11 @@ var TSE;
         /**
          * Creates a new shader.
          * @param name The name of this shader.
-         * @param vertexSource The source of the vertex shader.
-         * @param fragmentSource The source of the fragment shader.
          */
-        function Shader(name, vertexSource, fragmentSource) {
+        function Shader(name) {
             this._attributes = {};
             this._uniforms = {};
             this._name = name;
-            var vertexShader = this.loadShader(vertexSource, TSE.gl.VERTEX_SHADER);
-            var fragmentShader = this.loadShader(fragmentSource, TSE.gl.FRAGMENT_SHADER);
-            this.createProgram(vertexShader, fragmentShader);
-            this.detectAttributes();
-            this.detectUniforms();
         }
         Object.defineProperty(Shader.prototype, "name", {
             /**
@@ -440,6 +439,13 @@ var TSE;
                 throw new Error("Unable to find uniform named '" + name + "' in shader named '" + this._name + "'");
             }
             return this._uniforms[name];
+        };
+        Shader.prototype.load = function (vertexSource, fragmentSource) {
+            var vertexShader = this.loadShader(vertexSource, TSE.gl.VERTEX_SHADER);
+            var fragmentShader = this.loadShader(fragmentSource, TSE.gl.FRAGMENT_SHADER);
+            this.createProgram(vertexShader, fragmentShader);
+            this.detectAttributes();
+            this.detectUniforms();
         };
         Shader.prototype.loadShader = function (source, shaderType) {
             var shader = TSE.gl.createShader(shaderType);
@@ -487,6 +493,234 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
+    var BasicShader = /** @class */ (function (_super) {
+        __extends(BasicShader, _super);
+        function BasicShader() {
+            var _this = _super.call(this, "basic") || this;
+            _this.load(_this.getVertexSource(), _this.getFragmentSource());
+            return _this;
+        }
+        BasicShader.prototype.getVertexSource = function () {
+            return "\nattribute vec3 a_position;\nattribute vec2 a_texCoord;\n\nuniform mat4 u_projection;\nuniform mat4 u_model;\n\nvarying vec2 v_texCoord;\n\nvoid main() {\n    gl_Position = u_projection * u_model * vec4(a_position, 1.0);\n    v_texCoord = a_texCoord;\n}";
+        };
+        BasicShader.prototype.getFragmentSource = function () {
+            return "\nprecision mediump float;\n\nuniform vec4 u_tint;\nuniform sampler2D u_diffuse;\n\nvarying vec2 v_texCoord;\n\nvoid main() {\n    gl_FragColor = u_tint * texture2D(u_diffuse, v_texCoord);\n}\n";
+        };
+        return BasicShader;
+    }(TSE.Shader));
+    TSE.BasicShader = BasicShader;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var Color = /** @class */ (function () {
+        function Color(r, g, b, a) {
+            if (r === void 0) { r = 255; }
+            if (g === void 0) { g = 255; }
+            if (b === void 0) { b = 255; }
+            if (a === void 0) { a = 255; }
+            this._r = r;
+            this._g = g;
+            this._b = b;
+            this._a = a;
+        }
+        Object.defineProperty(Color.prototype, "r", {
+            get: function () {
+                return this._r;
+            },
+            set: function (value) {
+                this._r = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Color.prototype, "rFloat", {
+            get: function () {
+                return this._r / 255.0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Color.prototype, "g", {
+            get: function () {
+                return this._g;
+            },
+            set: function (value) {
+                this._g = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Color.prototype, "gFloat", {
+            get: function () {
+                return this._g / 255.0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Color.prototype, "b", {
+            get: function () {
+                return this._b;
+            },
+            set: function (value) {
+                this._b = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Color.prototype, "bFloat", {
+            get: function () {
+                return this._b / 255.0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Color.prototype, "a", {
+            get: function () {
+                return this._r;
+            },
+            set: function (value) {
+                this._a = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Color.prototype, "aFloat", {
+            get: function () {
+                return this._a / 255.0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Color.prototype.toArray = function () {
+            return [this._r, this._g, this._b, this._a];
+        };
+        Color.prototype.toFloatArray = function () {
+            return [this._r / 255.0, this._g / 255.0, this._b / 255.0, this._a / 255.0];
+        };
+        Color.prototype.toFloat32Array = function () {
+            return new Float32Array(this.toFloatArray());
+        };
+        Color.white = function () {
+            return new Color(255, 255, 255, 255);
+        };
+        Color.black = function () {
+            return new Color(0, 0, 0, 255);
+        };
+        Color.red = function () {
+            return new Color(255, 0, 0, 255);
+        };
+        Color.green = function () {
+            return new Color(0, 255, 0, 255);
+        };
+        Color.blue = function () {
+            return new Color(0, 0, 255, 255);
+        };
+        return Color;
+    }());
+    TSE.Color = Color;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var Material = /** @class */ (function () {
+        function Material(name, diffuseTextureName, tint) {
+            this._name = name;
+            this._diffuseTextureName = diffuseTextureName;
+            this._tint = tint;
+            if (this._diffuseTextureName !== undefined) {
+                this._diffuseTexture = TSE.TextureManager.getTexture(this._diffuseTextureName);
+            }
+        }
+        Object.defineProperty(Material.prototype, "name", {
+            get: function () {
+                return this._name;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Material.prototype, "diffuseTextureName", {
+            get: function () {
+                return this._diffuseTextureName;
+            },
+            set: function (value) {
+                if (this._diffuseTexture !== undefined) {
+                    TSE.TextureManager.releaseTexture(this._diffuseTextureName);
+                }
+                this._diffuseTextureName = value;
+                if (this._diffuseTextureName !== undefined) {
+                    this._diffuseTexture = TSE.TextureManager.getTexture(this._diffuseTextureName);
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Material.prototype, "diffuseTexture", {
+            get: function () {
+                return this._diffuseTexture;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Material.prototype, "tint", {
+            get: function () {
+                return this._tint;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Material.prototype.destroy = function () {
+            TSE.TextureManager.releaseTexture(this._diffuseTextureName);
+            this._diffuseTexture = undefined;
+        };
+        return Material;
+    }());
+    TSE.Material = Material;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var MaterialReferenceNode = /** @class */ (function () {
+        function MaterialReferenceNode(material) {
+            this.referenceCount = 1;
+            this.material = material;
+        }
+        return MaterialReferenceNode;
+    }());
+    var MaterialManager = /** @class */ (function () {
+        function MaterialManager() {
+        }
+        MaterialManager.registerMaterial = function (material) {
+            if (MaterialManager._materials[material.name] === undefined) {
+                MaterialManager._materials[material.name] = new MaterialReferenceNode(material);
+            }
+        };
+        MaterialManager.getMaterial = function (materialName) {
+            if (MaterialManager._materials[materialName] === undefined) {
+                return undefined;
+            }
+            else {
+                MaterialManager._materials[materialName].referenceCount++;
+                return MaterialManager._materials[materialName].material;
+            }
+        };
+        MaterialManager.releaseMaterial = function (materialName) {
+            if (MaterialManager._materials[materialName] === undefined) {
+                console.warn("Cannot release a material which has not been registered.");
+            }
+            else {
+                MaterialManager._materials[materialName].referenceCount--;
+                if (MaterialManager._materials[materialName].referenceCount < 1) {
+                    MaterialManager._materials[materialName].material.destroy();
+                    MaterialManager._materials[materialName].material = undefined;
+                    delete MaterialManager._materials[materialName];
+                }
+            }
+        };
+        MaterialManager._materials = {};
+        return MaterialManager;
+    }());
+    TSE.MaterialManager = MaterialManager;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
     /**
      * Represents a 2-dimensional sprite which is drawn on the screen.
      * */
@@ -494,11 +728,11 @@ var TSE;
         /**
          * Creates a new sprite.
          * @param name The name of this sprite.
-         * @param textureName The name of the texture to use with this sprite.
+         * @param materialName The name of the material to use with this sprite.
          * @param width The width of this sprite.
          * @param height The height of this sprite.
          */
-        function Sprite(name, textureName, width, height) {
+        function Sprite(name, materialName, width, height) {
             if (width === void 0) { width = 100; }
             if (height === void 0) { height = 100; }
             /**
@@ -508,8 +742,8 @@ var TSE;
             this._name = name;
             this._width = width;
             this._height = height;
-            this._textureName = textureName;
-            this._texture = TSE.TextureManager.getTexture(this._textureName);
+            this._materialName = materialName;
+            this._material = TSE.MaterialManager.getMaterial(this._materialName);
         }
         Object.defineProperty(Sprite.prototype, "name", {
             get: function () {
@@ -520,7 +754,9 @@ var TSE;
         });
         Sprite.prototype.destroy = function () {
             this._buffer.destroy();
-            TSE.TextureManager.releaseTexture(this._textureName);
+            TSE.MaterialManager.releaseMaterial(this._materialName);
+            this._material = undefined;
+            this._materialName = undefined;
         };
         /**
          * Performs loading routines on this sprite.
@@ -558,15 +794,156 @@ var TSE;
         };
         /** Draws this sprite. */
         Sprite.prototype.draw = function (shader) {
-            this._texture.activateAndBind(0);
-            var diffuseLocation = shader.getUniformLocation("u_diffuse");
-            TSE.gl.uniform1i(diffuseLocation, 0);
+            var modelLocation = shader.getUniformLocation("u_model");
+            TSE.gl.uniformMatrix4fv(modelLocation, false, new Float32Array(TSE.Matrix4x4.translation(this.position).data));
+            var colorLocation = shader.getUniformLocation("u_tint");
+            TSE.gl.uniform4fv(colorLocation, this._material.tint.toFloat32Array());
+            if (this._material.diffuseTexture !== undefined) {
+                this._material.diffuseTexture.activateAndBind(0);
+                var diffuseLocation = shader.getUniformLocation("u_diffuse");
+                TSE.gl.uniform1i(diffuseLocation, 0);
+            }
             this._buffer.bind();
             this._buffer.draw();
         };
         return Sprite;
     }());
     TSE.Sprite = Sprite;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var LEVEL = 0;
+    var BORDER = 0;
+    var TEMP_IMAGE_DATA = new Uint8Array([255, 255, 255, 255]);
+    var Texture = /** @class */ (function () {
+        function Texture(name, width, height) {
+            if (width === void 0) { width = 1; }
+            if (height === void 0) { height = 1; }
+            this._isLoaded = false;
+            this._name = name;
+            this._width = width;
+            this._height = height;
+            this._handle = TSE.gl.createTexture();
+            TSE.Message.subscribe(TSE.MESSAGE_ASSET_LOADER_ASSET_LOADED + this._name, this);
+            this.bind();
+            TSE.gl.texImage2D(TSE.gl.TEXTURE_2D, LEVEL, TSE.gl.RGBA, 1, 1, BORDER, TSE.gl.RGBA, TSE.gl.UNSIGNED_BYTE, TEMP_IMAGE_DATA);
+            var asset = TSE.AssetManager.getAsset(this.name);
+            if (asset !== undefined) {
+                this.loadTextureFromAsset(asset);
+            }
+        }
+        Object.defineProperty(Texture.prototype, "name", {
+            get: function () {
+                return this._name;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Texture.prototype, "isLoaded", {
+            get: function () {
+                return this._isLoaded;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Texture.prototype, "width", {
+            get: function () {
+                return this._width;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Texture.prototype, "height", {
+            get: function () {
+                return this._height;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Texture.prototype.destroy = function () {
+            TSE.gl.deleteTexture(this._handle);
+        };
+        Texture.prototype.activateAndBind = function (textureUnit) {
+            if (textureUnit === void 0) { textureUnit = 0; }
+            TSE.gl.activeTexture(TSE.gl.TEXTURE0 + textureUnit);
+            this.bind();
+        };
+        Texture.prototype.bind = function () {
+            TSE.gl.bindTexture(TSE.gl.TEXTURE_2D, this._handle);
+        };
+        Texture.prototype.unbind = function () {
+            TSE.gl.bindTexture(TSE.gl.TEXTURE_2D, undefined);
+        };
+        Texture.prototype.onMessage = function (message) {
+            if (message.code === TSE.MESSAGE_ASSET_LOADER_ASSET_LOADED + this._name) {
+                this.loadTextureFromAsset(message.context);
+            }
+        };
+        Texture.prototype.loadTextureFromAsset = function (asset) {
+            this._width = asset.width;
+            this._height = asset.height;
+            this.bind();
+            TSE.gl.texImage2D(TSE.gl.TEXTURE_2D, LEVEL, TSE.gl.RGBA, TSE.gl.RGBA, TSE.gl.UNSIGNED_BYTE, asset.data);
+            if (this.isPowerof2()) {
+                TSE.gl.generateMipmap(TSE.gl.TEXTURE_2D);
+            }
+            else {
+                // Do not generate a mip map and clamp wrapping to edge.
+                TSE.gl.texParameteri(TSE.gl.TEXTURE_2D, TSE.gl.TEXTURE_WRAP_S, TSE.gl.CLAMP_TO_EDGE);
+                TSE.gl.texParameteri(TSE.gl.TEXTURE_2D, TSE.gl.TEXTURE_WRAP_T, TSE.gl.CLAMP_TO_EDGE);
+                TSE.gl.texParameteri(TSE.gl.TEXTURE_2D, TSE.gl.TEXTURE_MIN_FILTER, TSE.gl.LINEAR);
+            }
+            this._isLoaded = true;
+        };
+        Texture.prototype.isPowerof2 = function () {
+            return (this.isValuePowerOf2(this._width) && this.isValuePowerOf2(this.height));
+        };
+        Texture.prototype.isValuePowerOf2 = function (value) {
+            return (value & (value - 1)) == 0;
+        };
+        return Texture;
+    }());
+    TSE.Texture = Texture;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var TextureReferenceNode = /** @class */ (function () {
+        function TextureReferenceNode(texture) {
+            this.referenceCount = 1;
+            this.texture = texture;
+        }
+        return TextureReferenceNode;
+    }());
+    var TextureManager = /** @class */ (function () {
+        function TextureManager() {
+        }
+        TextureManager.getTexture = function (textureName) {
+            if (TextureManager._textures[textureName] === undefined) {
+                var texture = new TSE.Texture(textureName);
+                TextureManager._textures[textureName] = new TextureReferenceNode(texture);
+            }
+            else {
+                TextureManager._textures[textureName].referenceCount++;
+            }
+            return TextureManager._textures[textureName].texture;
+        };
+        TextureManager.releaseTexture = function (textureName) {
+            if (TextureManager._textures[textureName] === undefined) {
+                console.warn("A texture named " + textureName + " does not exist and therefore cannot be released.");
+            }
+            else {
+                TextureManager._textures[textureName].referenceCount--;
+                if (TextureManager._textures[textureName].referenceCount < 1) {
+                    TextureManager._textures[textureName].texture.destroy();
+                    TextureManager._textures[textureName] = undefined;
+                    delete TextureManager._textures[textureName];
+                }
+            }
+        };
+        TextureManager._textures = {};
+        return TextureManager;
+    }());
+    TSE.TextureManager = TextureManager;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
@@ -634,6 +1011,57 @@ var TSE;
         return Matrix4x4;
     }());
     TSE.Matrix4x4 = Matrix4x4;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    /** Represents a 2-component vector. */
+    var Vector2 = /** @class */ (function () {
+        /**
+         * Creates a new vector 2.
+         * @param x The x component.
+         * @param y The y component.
+         */
+        function Vector2(x, y) {
+            if (x === void 0) { x = 0; }
+            if (y === void 0) { y = 0; }
+            this._x = x;
+            this._y = y;
+        }
+        Object.defineProperty(Vector2.prototype, "x", {
+            /** The x component. */
+            get: function () {
+                return this._x;
+            },
+            /** The x component. */
+            set: function (value) {
+                this._x = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Vector2.prototype, "y", {
+            /** The y component. */
+            get: function () {
+                return this._y;
+            },
+            /** The y component. */
+            set: function (value) {
+                this._y = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /** Returns the data of this vector as a number array. */
+        Vector2.prototype.toArray = function () {
+            return [this._x, this._y];
+        };
+        /** Returns the data of this vector as a Float32Array. */
+        Vector2.prototype.toFloat32Array = function () {
+            return new Float32Array(this.toArray());
+        };
+        return Vector2;
+    }());
+    TSE.Vector2 = Vector2;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
@@ -854,191 +1282,5 @@ var TSE;
         return MessageSubscriptionNode;
     }());
     TSE.MessageSubscriptionNode = MessageSubscriptionNode;
-})(TSE || (TSE = {}));
-var TSE;
-(function (TSE) {
-    /** Represents a 2-component vector. */
-    var Vector2 = /** @class */ (function () {
-        /**
-         * Creates a new vector 2.
-         * @param x The x component.
-         * @param y The y component.
-         */
-        function Vector2(x, y) {
-            if (x === void 0) { x = 0; }
-            if (y === void 0) { y = 0; }
-            this._x = x;
-            this._y = y;
-        }
-        Object.defineProperty(Vector2.prototype, "x", {
-            /** The x component. */
-            get: function () {
-                return this._x;
-            },
-            /** The x component. */
-            set: function (value) {
-                this._x = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Vector2.prototype, "y", {
-            /** The y component. */
-            get: function () {
-                return this._y;
-            },
-            /** The y component. */
-            set: function (value) {
-                this._y = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /** Returns the data of this vector as a number array. */
-        Vector2.prototype.toArray = function () {
-            return [this._x, this._y];
-        };
-        /** Returns the data of this vector as a Float32Array. */
-        Vector2.prototype.toFloat32Array = function () {
-            return new Float32Array(this.toArray());
-        };
-        return Vector2;
-    }());
-    TSE.Vector2 = Vector2;
-})(TSE || (TSE = {}));
-var TSE;
-(function (TSE) {
-    var LEVEL = 0;
-    var BORDER = 0;
-    var TEMP_IMAGE_DATA = new Uint8Array([255, 255, 255, 255]);
-    var Texture = /** @class */ (function () {
-        function Texture(name, width, height) {
-            if (width === void 0) { width = 1; }
-            if (height === void 0) { height = 1; }
-            this._isLoaded = false;
-            this._name = name;
-            this._width = width;
-            this._height = height;
-            this._handle = TSE.gl.createTexture();
-            TSE.Message.subscribe(TSE.MESSAGE_ASSET_LOADER_ASSET_LOADED + this._name, this);
-            this.bind();
-            TSE.gl.texImage2D(TSE.gl.TEXTURE_2D, LEVEL, TSE.gl.RGBA, 1, 1, BORDER, TSE.gl.RGBA, TSE.gl.UNSIGNED_BYTE, TEMP_IMAGE_DATA);
-            var asset = TSE.AssetManager.getAsset(this.name);
-            if (asset !== undefined) {
-                this.loadTextureFromAsset(asset);
-            }
-        }
-        Object.defineProperty(Texture.prototype, "name", {
-            get: function () {
-                return this._name;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Texture.prototype, "isLoaded", {
-            get: function () {
-                return this._isLoaded;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Texture.prototype, "width", {
-            get: function () {
-                return this._width;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Texture.prototype, "height", {
-            get: function () {
-                return this._height;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Texture.prototype.destroy = function () {
-            TSE.gl.deleteTexture(this._handle);
-        };
-        Texture.prototype.activateAndBind = function (textureUnit) {
-            if (textureUnit === void 0) { textureUnit = 0; }
-            TSE.gl.activeTexture(TSE.gl.TEXTURE0 + textureUnit);
-            this.bind();
-        };
-        Texture.prototype.bind = function () {
-            TSE.gl.bindTexture(TSE.gl.TEXTURE_2D, this._handle);
-        };
-        Texture.prototype.unbind = function () {
-            TSE.gl.bindTexture(TSE.gl.TEXTURE_2D, undefined);
-        };
-        Texture.prototype.onMessage = function (message) {
-            if (message.code === TSE.MESSAGE_ASSET_LOADER_ASSET_LOADED + this._name) {
-                this.loadTextureFromAsset(message.context);
-            }
-        };
-        Texture.prototype.loadTextureFromAsset = function (asset) {
-            this._width = asset.width;
-            this._height = asset.height;
-            this.bind();
-            TSE.gl.texImage2D(TSE.gl.TEXTURE_2D, LEVEL, TSE.gl.RGBA, TSE.gl.RGBA, TSE.gl.UNSIGNED_BYTE, asset.data);
-            if (this.isPowerof2()) {
-                TSE.gl.generateMipmap(TSE.gl.TEXTURE_2D);
-            }
-            else {
-                // Do not generate a mip map and clamp wrapping to edge.
-                TSE.gl.texParameteri(TSE.gl.TEXTURE_2D, TSE.gl.TEXTURE_WRAP_S, TSE.gl.CLAMP_TO_EDGE);
-                TSE.gl.texParameteri(TSE.gl.TEXTURE_2D, TSE.gl.TEXTURE_WRAP_T, TSE.gl.CLAMP_TO_EDGE);
-                TSE.gl.texParameteri(TSE.gl.TEXTURE_2D, TSE.gl.TEXTURE_MIN_FILTER, TSE.gl.LINEAR);
-            }
-            this._isLoaded = true;
-        };
-        Texture.prototype.isPowerof2 = function () {
-            return (this.isValuePowerOf2(this._width) && this.isValuePowerOf2(this.height));
-        };
-        Texture.prototype.isValuePowerOf2 = function (value) {
-            return (value & (value - 1)) == 0;
-        };
-        return Texture;
-    }());
-    TSE.Texture = Texture;
-})(TSE || (TSE = {}));
-var TSE;
-(function (TSE) {
-    var TextureReferenceNode = /** @class */ (function () {
-        function TextureReferenceNode(texture) {
-            this.referenceCount = 1;
-            this.texture = texture;
-        }
-        return TextureReferenceNode;
-    }());
-    var TextureManager = /** @class */ (function () {
-        function TextureManager() {
-        }
-        TextureManager.getTexture = function (textureName) {
-            if (TextureManager._textures[textureName] === undefined) {
-                var texture = new TSE.Texture(textureName);
-                TextureManager._textures[textureName] = new TextureReferenceNode(texture);
-            }
-            else {
-                TextureManager._textures[textureName].referenceCount++;
-            }
-            return TextureManager._textures[textureName].texture;
-        };
-        TextureManager.releaseTexture = function (textureName) {
-            if (TextureManager._textures[textureName] === undefined) {
-                console.warn("A texture named " + textureName + " does not exist and therefore cannot be released.");
-            }
-            else {
-                TextureManager._textures[textureName].referenceCount--;
-                if (TextureManager._textures[textureName].referenceCount < 1) {
-                    TextureManager._textures[textureName].texture.destroy();
-                    TextureManager._textures[textureName] = undefined;
-                    delete TextureManager._textures[textureName];
-                }
-            }
-        };
-        TextureManager._textures = {};
-        return TextureManager;
-    }());
-    TSE.TextureManager = TextureManager;
 })(TSE || (TSE = {}));
 //# sourceMappingURL=main.js.map
