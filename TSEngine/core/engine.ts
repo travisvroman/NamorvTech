@@ -9,7 +9,7 @@
         private _basicShader: BasicShader;
         private _projection: Matrix4x4;
 
-        private _sprite: Sprite;
+
 
         /**
          * Creates a new engine.
@@ -29,17 +29,16 @@
 
             this._basicShader = new BasicShader();
             this._basicShader.use();
-
+            
             // Load materials
             MaterialManager.registerMaterial( new Material( "crate", "assets/textures/crate.jpg", new Color( 0, 128, 255, 255 ) ) );
 
+            let zoneID = ZoneManager.createTestZone();
+            
             // Load
             this._projection = Matrix4x4.orthographic( 0, this._canvas.width, this._canvas.height, 0, -100.0, 100.0 );
+            ZoneManager.changeZone( zoneID );
 
-            this._sprite = new Sprite( "test", "crate" );
-            this._sprite.load();
-            this._sprite.position.x = 200;
-            this._sprite.position.y = 100;
             this.resize();
             this.loop();
         }
@@ -60,15 +59,19 @@
         private loop(): void {
             MessageBus.update( 0 );
 
+            ZoneManager.update( 0 );
+
             gl.clear( gl.COLOR_BUFFER_BIT );
 
+
+            ZoneManager.render( this._basicShader );
             // Set uniforms.
             let projectionPosition = this._basicShader.getUniformLocation( "u_projection" );
             gl.uniformMatrix4fv( projectionPosition, false, new Float32Array( this._projection.data ) );
 
 
             //
-            this._sprite.draw( this._basicShader );
+
 
             requestAnimationFrame( this.loop.bind( this ) );
         }

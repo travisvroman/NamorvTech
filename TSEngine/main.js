@@ -172,12 +172,10 @@ var TSE;
             this._basicShader.use();
             // Load materials
             TSE.MaterialManager.registerMaterial(new TSE.Material("crate", "assets/textures/crate.jpg", new TSE.Color(0, 128, 255, 255)));
+            var zoneID = TSE.ZoneManager.createTestZone();
             // Load
             this._projection = TSE.Matrix4x4.orthographic(0, this._canvas.width, this._canvas.height, 0, -100.0, 100.0);
-            this._sprite = new TSE.Sprite("test", "crate");
-            this._sprite.load();
-            this._sprite.position.x = 200;
-            this._sprite.position.y = 100;
+            TSE.ZoneManager.changeZone(zoneID);
             this.resize();
             this.loop();
         };
@@ -194,12 +192,13 @@ var TSE;
         };
         Engine.prototype.loop = function () {
             TSE.MessageBus.update(0);
+            TSE.ZoneManager.update(0);
             TSE.gl.clear(TSE.gl.COLOR_BUFFER_BIT);
+            TSE.ZoneManager.render(this._basicShader);
             // Set uniforms.
             var projectionPosition = this._basicShader.getUniformLocation("u_projection");
             TSE.gl.uniformMatrix4fv(projectionPosition, false, new Float32Array(this._projection.data));
             //
-            this._sprite.draw(this._basicShader);
             requestAnimationFrame(this.loop.bind(this));
         };
         return Engine;
@@ -735,10 +734,6 @@ var TSE;
         function Sprite(name, materialName, width, height) {
             if (width === void 0) { width = 100; }
             if (height === void 0) { height = 100; }
-            /**
-             * The position of this sprite.
-             */
-            this.position = new TSE.Vector3();
             this._name = name;
             this._width = width;
             this._height = height;
@@ -793,9 +788,9 @@ var TSE;
         Sprite.prototype.update = function (time) {
         };
         /** Draws this sprite. */
-        Sprite.prototype.draw = function (shader) {
+        Sprite.prototype.draw = function (shader, model) {
             var modelLocation = shader.getUniformLocation("u_model");
-            TSE.gl.uniformMatrix4fv(modelLocation, false, new Float32Array(TSE.Matrix4x4.translation(this.position).data));
+            TSE.gl.uniformMatrix4fv(modelLocation, false, model.toFloat32Array());
             var colorLocation = shader.getUniformLocation("u_tint");
             TSE.gl.uniform4fv(colorLocation, this._material.tint.toFloat32Array());
             if (this._material.diffuseTexture !== undefined) {
@@ -1004,9 +999,110 @@ var TSE;
             m._data[14] = position.z;
             return m;
         };
+        Matrix4x4.rotationX = function (angleInRadians) {
+            var m = new Matrix4x4();
+            var c = Math.cos(angleInRadians);
+            var s = Math.sin(angleInRadians);
+            m._data[5] = c;
+            m._data[6] = s;
+            m._data[9] = -s;
+            m._data[10] = c;
+            return m;
+        };
+        Matrix4x4.rotationY = function (angleInRadians) {
+            var m = new Matrix4x4();
+            var c = Math.cos(angleInRadians);
+            var s = Math.sin(angleInRadians);
+            m._data[0] = c;
+            m._data[2] = -s;
+            m._data[8] = s;
+            m._data[10] = c;
+            return m;
+        };
+        Matrix4x4.rotationZ = function (angleInRadians) {
+            var m = new Matrix4x4();
+            var c = Math.cos(angleInRadians);
+            var s = Math.sin(angleInRadians);
+            m._data[0] = c;
+            m._data[1] = s;
+            m._data[4] = -s;
+            m._data[5] = c;
+            return m;
+        };
+        Matrix4x4.rotationXYZ = function (xRadians, yRadians, zRadians) {
+            var rx = Matrix4x4.rotationX(xRadians);
+            var ry = Matrix4x4.rotationY(yRadians);
+            var rz = Matrix4x4.rotationZ(zRadians);
+            // ZYX
+            return Matrix4x4.multiply(Matrix4x4.multiply(rz, ry), rx);
+        };
+        Matrix4x4.scale = function (scale) {
+            var m = new Matrix4x4();
+            m._data[0] = scale.x;
+            m._data[5] = scale.y;
+            m._data[10] = scale.z;
+            return m;
+        };
+        Matrix4x4.multiply = function (a, b) {
+            var m = new Matrix4x4();
+            var b00 = b._data[0 * 4 + 0];
+            var b01 = b._data[0 * 4 + 1];
+            var b02 = b._data[0 * 4 + 2];
+            var b03 = b._data[0 * 4 + 3];
+            var b10 = b._data[1 * 4 + 0];
+            var b11 = b._data[1 * 4 + 1];
+            var b12 = b._data[1 * 4 + 2];
+            var b13 = b._data[1 * 4 + 3];
+            var b20 = b._data[2 * 4 + 0];
+            var b21 = b._data[2 * 4 + 1];
+            var b22 = b._data[2 * 4 + 2];
+            var b23 = b._data[2 * 4 + 3];
+            var b30 = b._data[3 * 4 + 0];
+            var b31 = b._data[3 * 4 + 1];
+            var b32 = b._data[3 * 4 + 2];
+            var b33 = b._data[3 * 4 + 3];
+            var a00 = a._data[0 * 4 + 0];
+            var a01 = a._data[0 * 4 + 1];
+            var a02 = a._data[0 * 4 + 2];
+            var a03 = a._data[0 * 4 + 3];
+            var a10 = a._data[1 * 4 + 0];
+            var a11 = a._data[1 * 4 + 1];
+            var a12 = a._data[1 * 4 + 2];
+            var a13 = a._data[1 * 4 + 3];
+            var a20 = a._data[2 * 4 + 0];
+            var a21 = a._data[2 * 4 + 1];
+            var a22 = a._data[2 * 4 + 2];
+            var a23 = a._data[2 * 4 + 3];
+            var a30 = a._data[3 * 4 + 0];
+            var a31 = a._data[3 * 4 + 1];
+            var a32 = a._data[3 * 4 + 2];
+            var a33 = a._data[3 * 4 + 3];
+            m._data[0] = b00 * a00 + b01 * a10 + b02 * a20 + b03 * a30;
+            m._data[1] = b00 * a01 + b01 * a11 + b02 * a21 + b03 * a31;
+            m._data[2] = b00 * a02 + b01 * a12 + b02 * a22 + b03 * a32;
+            m._data[3] = b00 * a03 + b01 * a13 + b02 * a23 + b03 * a33;
+            m._data[4] = b10 * a00 + b11 * a10 + b12 * a20 + b13 * a30;
+            m._data[5] = b10 * a01 + b11 * a11 + b12 * a21 + b13 * a31;
+            m._data[6] = b10 * a02 + b11 * a12 + b12 * a22 + b13 * a32;
+            m._data[7] = b10 * a03 + b11 * a13 + b12 * a23 + b13 * a33;
+            m._data[8] = b20 * a00 + b21 * a10 + b22 * a20 + b23 * a30;
+            m._data[9] = b20 * a01 + b21 * a11 + b22 * a21 + b23 * a31;
+            m._data[10] = b20 * a02 + b21 * a12 + b22 * a22 + b23 * a32;
+            m._data[11] = b20 * a03 + b21 * a13 + b22 * a23 + b23 * a33;
+            m._data[12] = b30 * a00 + b31 * a10 + b32 * a20 + b33 * a30;
+            m._data[13] = b30 * a01 + b31 * a11 + b32 * a21 + b33 * a31;
+            m._data[14] = b30 * a02 + b31 * a12 + b32 * a22 + b33 * a32;
+            m._data[15] = b30 * a03 + b31 * a13 + b32 * a23 + b33 * a33;
+            return m;
+        };
         /** Returns the data of this matrix as a Float32Array. */
         Matrix4x4.prototype.toFloat32Array = function () {
             return new Float32Array(this._data);
+        };
+        Matrix4x4.prototype.copyFrom = function (m) {
+            for (var i = 0; i < 16; ++i) {
+                this._data[i] = m._data[i];
+            }
         };
         return Matrix4x4;
     }());
@@ -1117,6 +1213,20 @@ var TSE;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Vector3, "zero", {
+            get: function () {
+                return new Vector3();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Vector3, "one", {
+            get: function () {
+                return new Vector3(1, 1, 1);
+            },
+            enumerable: true,
+            configurable: true
+        });
         /** Returns the data of this vector as a number array. */
         Vector3.prototype.toArray = function () {
             return [this._x, this._y, this._z];
@@ -1124,6 +1234,11 @@ var TSE;
         /** Returns the data of this vector as a Float32Array. */
         Vector3.prototype.toFloat32Array = function () {
             return new Float32Array(this.toArray());
+        };
+        Vector3.prototype.copyFrom = function (vector) {
+            this._x = vector._x;
+            this._y = vector._y;
+            this._z = vector._z;
         };
         return Vector3;
     }());
@@ -1282,5 +1397,378 @@ var TSE;
         return MessageSubscriptionNode;
     }());
     TSE.MessageSubscriptionNode = MessageSubscriptionNode;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var Transform = /** @class */ (function () {
+        function Transform() {
+            this.position = TSE.Vector3.zero;
+            this.rotation = TSE.Vector3.zero;
+            this.scale = TSE.Vector3.one;
+        }
+        Transform.prototype.copyFrom = function (transform) {
+            this.position.copyFrom(transform.position);
+            this.rotation.copyFrom(transform.rotation);
+            this.scale.copyFrom(transform.scale);
+        };
+        Transform.prototype.getTransformationMatrix = function () {
+            var translation = TSE.Matrix4x4.translation(this.position);
+            var rotation = TSE.Matrix4x4.rotationXYZ(this.rotation.x, this.rotation.y, this.rotation.z);
+            var scale = TSE.Matrix4x4.scale(this.scale);
+            // T * R * S
+            return TSE.Matrix4x4.multiply(TSE.Matrix4x4.multiply(translation, rotation), scale);
+        };
+        return Transform;
+    }());
+    TSE.Transform = Transform;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var SimObject = /** @class */ (function () {
+        function SimObject(id, name, scene) {
+            this._children = [];
+            this._isLoaded = false;
+            this._components = [];
+            this._localMatrix = TSE.Matrix4x4.identity();
+            this._worldMatrix = TSE.Matrix4x4.identity();
+            this.transform = new TSE.Transform();
+            this._id = id;
+            this.name = name;
+            this._scene = scene;
+        }
+        Object.defineProperty(SimObject.prototype, "id", {
+            get: function () {
+                return this._id;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SimObject.prototype, "parent", {
+            get: function () {
+                return this._parent;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SimObject.prototype, "worldMatrix", {
+            get: function () {
+                return this._worldMatrix;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SimObject.prototype, "isLoaded", {
+            get: function () {
+                return this._isLoaded;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        SimObject.prototype.addChild = function (child) {
+            child._parent = this;
+            this._children.push(child);
+            child.onAdded(this._scene);
+        };
+        SimObject.prototype.removeChild = function (child) {
+            var index = this._children.indexOf(child);
+            if (index !== -1) {
+                child._parent = undefined;
+                this._children.splice(index, 1);
+            }
+        };
+        SimObject.prototype.getObjectByName = function (name) {
+            if (this.name === name) {
+                return this;
+            }
+            for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                var child = _a[_i];
+                var result = child.getObjectByName(name);
+                if (result !== undefined) {
+                    return result;
+                }
+            }
+            return undefined;
+        };
+        SimObject.prototype.addComponent = function (component) {
+            this._components.push(component);
+            component.setOwner(this);
+        };
+        SimObject.prototype.load = function () {
+            this._isLoaded = true;
+            for (var _i = 0, _a = this._components; _i < _a.length; _i++) {
+                var c = _a[_i];
+                c.load();
+            }
+            for (var _b = 0, _c = this._children; _b < _c.length; _b++) {
+                var c = _c[_b];
+                c.load();
+            }
+        };
+        SimObject.prototype.update = function (time) {
+            this._localMatrix = this.transform.getTransformationMatrix();
+            this.updateWorldMatrix((this._parent !== undefined) ? this._parent.worldMatrix : undefined);
+            for (var _i = 0, _a = this._components; _i < _a.length; _i++) {
+                var c = _a[_i];
+                c.update(time);
+            }
+            for (var _b = 0, _c = this._children; _b < _c.length; _b++) {
+                var c = _c[_b];
+                c.update(time);
+            }
+        };
+        SimObject.prototype.render = function (shader) {
+            for (var _i = 0, _a = this._components; _i < _a.length; _i++) {
+                var c = _a[_i];
+                c.render(shader);
+            }
+            for (var _b = 0, _c = this._children; _b < _c.length; _b++) {
+                var c = _c[_b];
+                c.render(shader);
+            }
+        };
+        SimObject.prototype.onAdded = function (scene) {
+            this._scene = scene;
+        };
+        SimObject.prototype.updateWorldMatrix = function (parentWorldMatrix) {
+            if (parentWorldMatrix !== undefined) {
+                this._worldMatrix = TSE.Matrix4x4.multiply(parentWorldMatrix, this._localMatrix);
+            }
+            else {
+                this._worldMatrix.copyFrom(this._localMatrix);
+            }
+        };
+        return SimObject;
+    }());
+    TSE.SimObject = SimObject;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var Scene = /** @class */ (function () {
+        function Scene() {
+            this._root = new TSE.SimObject(0, "__ROOT__", this);
+        }
+        Object.defineProperty(Scene.prototype, "root", {
+            get: function () {
+                return this._root;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene.prototype, "isLoaded", {
+            get: function () {
+                return this._root.isLoaded;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Scene.prototype.addObject = function (object) {
+            this._root.addChild(object);
+        };
+        Scene.prototype.getObjectByName = function (name) {
+            return this._root.getObjectByName(name);
+        };
+        Scene.prototype.load = function () {
+            this._root.load();
+        };
+        Scene.prototype.update = function (time) {
+            this._root.update(time);
+        };
+        Scene.prototype.render = function (shader) {
+            this._root.render(shader);
+        };
+        return Scene;
+    }());
+    TSE.Scene = Scene;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var ZoneState;
+    (function (ZoneState) {
+        ZoneState[ZoneState["UNINITIALIZED"] = 0] = "UNINITIALIZED";
+        ZoneState[ZoneState["LOADING"] = 1] = "LOADING";
+        ZoneState[ZoneState["UPDATING"] = 2] = "UPDATING";
+    })(ZoneState = TSE.ZoneState || (TSE.ZoneState = {}));
+    var Zone = /** @class */ (function () {
+        function Zone(id, name, description) {
+            this._state = ZoneState.UNINITIALIZED;
+            this._id = id;
+            this._name = name;
+            this._description = description;
+            this._scene = new TSE.Scene();
+        }
+        Object.defineProperty(Zone.prototype, "id", {
+            get: function () {
+                return this._id;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Zone.prototype, "name", {
+            get: function () {
+                return this._name;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Zone.prototype, "description", {
+            get: function () {
+                return this._description;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Zone.prototype, "scene", {
+            get: function () {
+                return this._scene;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Zone.prototype.load = function () {
+            this._state = ZoneState.LOADING;
+            this._scene.load();
+            this._state = ZoneState.UPDATING;
+        };
+        Zone.prototype.unload = function () {
+        };
+        Zone.prototype.update = function (time) {
+            if (this._state === ZoneState.UPDATING) {
+                this._scene.update(time);
+            }
+        };
+        Zone.prototype.render = function (shader) {
+            if (this._state === ZoneState.UPDATING) {
+                this._scene.render(shader);
+            }
+        };
+        Zone.prototype.onActivated = function () {
+        };
+        Zone.prototype.onDeactivated = function () {
+        };
+        return Zone;
+    }());
+    TSE.Zone = Zone;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var ZoneManager = /** @class */ (function () {
+        function ZoneManager() {
+        }
+        ZoneManager.createZone = function (name, description) {
+            ZoneManager._globalZoneID++;
+            var zone = new TSE.Zone(ZoneManager._globalZoneID, name, description);
+            ZoneManager._zones[ZoneManager._globalZoneID] = zone;
+            return ZoneManager._globalZoneID;
+        };
+        // TODO: This is temporary code until file loading is supported.
+        ZoneManager.createTestZone = function () {
+            ZoneManager._globalZoneID++;
+            var zone = new TSE.TestZone(ZoneManager._globalZoneID, "test", "A simple test zone");
+            ZoneManager._zones[ZoneManager._globalZoneID] = zone;
+            return ZoneManager._globalZoneID;
+        };
+        ZoneManager.changeZone = function (id) {
+            if (ZoneManager._activeZone !== undefined) {
+                ZoneManager._activeZone.onDeactivated();
+                ZoneManager._activeZone.unload();
+            }
+            if (ZoneManager._zones[id] !== undefined) {
+                ZoneManager._activeZone = ZoneManager._zones[id];
+                ZoneManager._activeZone.onActivated();
+                ZoneManager._activeZone.load();
+            }
+        };
+        ZoneManager.update = function (time) {
+            if (ZoneManager._activeZone !== undefined) {
+                ZoneManager._activeZone.update(time);
+            }
+        };
+        ZoneManager.render = function (shader) {
+            if (ZoneManager._activeZone !== undefined) {
+                ZoneManager._activeZone.render(shader);
+            }
+        };
+        ZoneManager._globalZoneID = -1;
+        ZoneManager._zones = {};
+        return ZoneManager;
+    }());
+    TSE.ZoneManager = ZoneManager;
+})(TSE || (TSE = {}));
+/// <reference path="zone.ts" />
+var TSE;
+(function (TSE) {
+    var TestZone = /** @class */ (function (_super) {
+        __extends(TestZone, _super);
+        function TestZone() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        TestZone.prototype.load = function () {
+            this._parentObject = new TSE.SimObject(0, "parentObject");
+            this._parentObject.transform.position.x = 300;
+            this._parentObject.transform.position.y = 300;
+            this._parentSprite = new TSE.SpriteComponent("test", "crate");
+            this._parentObject.addComponent(this._parentSprite);
+            this._testObject = new TSE.SimObject(1, "testObject");
+            this._testSprite = new TSE.SpriteComponent("test", "crate");
+            this._testObject.addComponent(this._testSprite);
+            this._testObject.transform.position.x = 120;
+            this._testObject.transform.position.y = 120;
+            this._parentObject.addChild(this._testObject);
+            this.scene.addObject(this._parentObject);
+            _super.prototype.load.call(this);
+        };
+        TestZone.prototype.update = function (time) {
+            this._parentObject.transform.rotation.z += 0.01;
+            this._testObject.transform.rotation.z += 0.01;
+            _super.prototype.update.call(this, time);
+        };
+        return TestZone;
+    }(TSE.Zone));
+    TSE.TestZone = TestZone;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var BaseComponent = /** @class */ (function () {
+        function BaseComponent(name) {
+        }
+        Object.defineProperty(BaseComponent.prototype, "owner", {
+            get: function () {
+                return this._owner;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        BaseComponent.prototype.setOwner = function (owner) {
+            this._owner = owner;
+        };
+        BaseComponent.prototype.load = function () {
+        };
+        BaseComponent.prototype.update = function (time) {
+        };
+        BaseComponent.prototype.render = function (shader) {
+        };
+        return BaseComponent;
+    }());
+    TSE.BaseComponent = BaseComponent;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var SpriteComponent = /** @class */ (function (_super) {
+        __extends(SpriteComponent, _super);
+        function SpriteComponent(name, materialName) {
+            var _this = _super.call(this, name) || this;
+            _this._sprite = new TSE.Sprite(name, materialName);
+            return _this;
+        }
+        SpriteComponent.prototype.load = function () {
+            this._sprite.load();
+        };
+        SpriteComponent.prototype.render = function (shader) {
+            this._sprite.draw(shader, this.owner.worldMatrix);
+            _super.prototype.render.call(this, shader);
+        };
+        return SpriteComponent;
+    }(TSE.BaseComponent));
+    TSE.SpriteComponent = SpriteComponent;
 })(TSE || (TSE = {}));
 //# sourceMappingURL=main.js.map

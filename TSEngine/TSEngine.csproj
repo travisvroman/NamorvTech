@@ -104,6 +104,8 @@
     <TypeScriptCompile Include="core\assets\IAsset.ts" />
     <TypeScriptCompile Include="core\assets\IAssetLoader.ts" />
     <TypeScriptCompile Include="core\assets\imageAssetLoader.ts" />
+    <TypeScriptCompile Include="core\components\baseComponent.ts" />
+    <TypeScriptCompile Include="core\components\spriteComponent.ts" />
     <TypeScriptCompile Include="core\engine.ts" />
     <TypeScriptCompile Include="core\gl\gl.ts" />
     <TypeScriptCompile Include="core\gl\glBuffer.ts" />
@@ -116,12 +118,18 @@
     <TypeScriptCompile Include="core\graphics\texture.ts" />
     <TypeScriptCompile Include="core\graphics\textureManager.ts" />
     <TypeScriptCompile Include="core\math\matrix4x4.ts" />
+    <TypeScriptCompile Include="core\math\transform.ts" />
     <TypeScriptCompile Include="core\math\vector2.ts" />
     <TypeScriptCompile Include="core\math\vector3.ts" />
     <TypeScriptCompile Include="core\message\IMessageHandler.ts" />
     <TypeScriptCompile Include="core\message\message.ts" />
     <TypeScriptCompile Include="core\message\messageBus.ts" />
     <TypeScriptCompile Include="core\message\messageSubscriptionNode.ts" />
+    <TypeScriptCompile Include="core\world\scene.ts" />
+    <TypeScriptCompile Include="core\world\simObject.ts" />
+    <TypeScriptCompile Include="core\world\TestZone.ts" />
+    <TypeScriptCompile Include="core\world\zone.ts" />
+    <TypeScriptCompile Include="core\world\zoneManager.ts" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
