@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "module": "amd",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "outFile": "main.js",
+        "sourceMap": true,
+        "target": "es5"
+    },
+    "include": [
+        "**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/*.spec.ts"
+    ]
+}

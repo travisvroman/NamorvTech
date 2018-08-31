@@ -1,10 +1,7 @@
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    }
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -12,7 +9,6 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 var engine;
-// The main entry point to the application.
 window.onload = function () {
     engine = new TSE.Engine();
     engine.start();
@@ -22,35 +18,59 @@ window.onresize = function () {
 };
 var TSE;
 (function (TSE) {
+    var Engine = (function () {
+        function Engine() {
+        }
+        Engine.prototype.start = function () {
+            this._canvas = TSE.GLUtilities.initialize();
+            TSE.AssetManager.initialize();
+            TSE.gl.clearColor(0, 0, 0, 1);
+            this._basicShader = new TSE.BasicShader();
+            this._basicShader.use();
+            TSE.MaterialManager.registerMaterial(new TSE.Material("crate", "assets/textures/crate.jpg", new TSE.Color(0, 128, 255, 255)));
+            var zoneID = TSE.ZoneManager.createTestZone();
+            this._projection = TSE.Matrix4x4.orthographic(0, this._canvas.width, this._canvas.height, 0, -100.0, 100.0);
+            TSE.ZoneManager.changeZone(zoneID);
+            this.resize();
+            this.loop();
+        };
+        Engine.prototype.resize = function () {
+            if (this._canvas !== undefined) {
+                this._canvas.width = window.innerWidth;
+                this._canvas.height = window.innerHeight;
+                TSE.gl.viewport(0, 0, TSE.gl.canvas.width, TSE.gl.canvas.height);
+                this._projection = TSE.Matrix4x4.orthographic(0, this._canvas.width, this._canvas.height, 0, -100.0, 100.0);
+            }
+        };
+        Engine.prototype.loop = function () {
+            TSE.MessageBus.update(0);
+            TSE.ZoneManager.update(0);
+            TSE.gl.clear(TSE.gl.COLOR_BUFFER_BIT);
+            TSE.ZoneManager.render(this._basicShader);
+            var projectionPosition = this._basicShader.getUniformLocation("u_projection");
+            TSE.gl.uniformMatrix4fv(projectionPosition, false, new Float32Array(this._projection.data));
+            requestAnimationFrame(this.loop.bind(this));
+        };
+        return Engine;
+    }());
+    TSE.Engine = Engine;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
     TSE.MESSAGE_ASSET_LOADER_ASSET_LOADED = "MESSAGE_ASSET_LOADER_ASSET_LOADED::";
-    /** Manages all assets in the engine. */
-    var AssetManager = /** @class */ (function () {
-        /** Private to enforce static method calls and prevent instantiation. */
+    var AssetManager = (function () {
         function AssetManager() {
         }
-        /** Initializes this manager. */
         AssetManager.initialize = function () {
             AssetManager._loaders.push(new TSE.ImageAssetLoader());
         };
-        /**
-         * Registers the provided loader with this asset manager.
-         * @param loader The loader to be registered.
-         */
         AssetManager.registerLoader = function (loader) {
             AssetManager._loaders.push(loader);
         };
-        /**
-         * A callback to be made from an asset loader when an asset is loaded.
-         * @param asset
-         */
         AssetManager.onAssetLoaded = function (asset) {
             AssetManager._loadedAssets[asset.name] = asset;
             TSE.Message.send(TSE.MESSAGE_ASSET_LOADER_ASSET_LOADED + asset.name, this, asset);
         };
-        /**
-         * Attempts to load an asset using a registered asset loader.
-         * @param assetName The name/url of the asset to be loaded.
-         */
         AssetManager.loadAsset = function (assetName) {
             var extension = assetName.split('.').pop().toLowerCase();
             for (var _i = 0, _a = AssetManager._loaders; _i < _a.length; _i++) {
@@ -62,17 +82,9 @@ var TSE;
             }
             console.warn("Unable to load asset with extension " + extension + " because there is no loader associated with it.");
         };
-        /**
-         * Indicates if an asset with the provided name has been loaded.
-         * @param assetName The asset name to check.
-         */
         AssetManager.isAssetLoaded = function (assetName) {
             return AssetManager._loadedAssets[assetName] !== undefined;
         };
-        /**
-         * Attempts to get an asset with the provided name. If found, it is returned; otherwise, undefined is returned.
-         * @param assetName The asset name to get.
-         */
         AssetManager.getAsset = function (assetName) {
             if (AssetManager._loadedAssets[assetName] !== undefined) {
                 return AssetManager._loadedAssets[assetName];
@@ -90,19 +102,12 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    /** Represents an image asset */
-    var ImageAsset = /** @class */ (function () {
-        /**
-         * Creates a new image asset.
-         * @param name The name of this asset.
-         * @param data The data of this asset.
-         */
+    var ImageAsset = (function () {
         function ImageAsset(name, data) {
             this.name = name;
             this.data = data;
         }
         Object.defineProperty(ImageAsset.prototype, "width", {
-            /** The width of this image asset. */
             get: function () {
                 return this.data.width;
             },
@@ -110,7 +115,6 @@ var TSE;
             configurable: true
         });
         Object.defineProperty(ImageAsset.prototype, "height", {
-            /** The height of this image asset. */
             get: function () {
                 return this.data.height;
             },
@@ -120,22 +124,16 @@ var TSE;
         return ImageAsset;
     }());
     TSE.ImageAsset = ImageAsset;
-    /** Represents an image asset loader. */
-    var ImageAssetLoader = /** @class */ (function () {
+    var ImageAssetLoader = (function () {
         function ImageAssetLoader() {
         }
         Object.defineProperty(ImageAssetLoader.prototype, "supportedExtensions", {
-            /** The extensions supported by this asset loader. */
             get: function () {
                 return ["png", "gif", "jpg"];
             },
             enumerable: true,
             configurable: true
         });
-        /**
-         * Loads an asset with the given name.
-         * @param assetName The name of the asset to be loaded.
-         */
         ImageAssetLoader.prototype.loadAsset = function (assetName) {
             var image = new Image();
             image.onload = this.onImageLoaded.bind(this, assetName, image);
@@ -152,71 +150,54 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    /**
-     * The main game engine class.
-     * */
-    var Engine = /** @class */ (function () {
-        /**
-         * Creates a new engine.
-         * */
-        function Engine() {
+    var BaseComponent = (function () {
+        function BaseComponent(name) {
         }
-        /**
-         * Starts up this engine.
-         * */
-        Engine.prototype.start = function () {
-            this._canvas = TSE.GLUtilities.initialize();
-            TSE.AssetManager.initialize();
-            TSE.gl.clearColor(0, 0, 0, 1);
-            this._basicShader = new TSE.BasicShader();
-            this._basicShader.use();
-            // Load materials
-            TSE.MaterialManager.registerMaterial(new TSE.Material("crate", "assets/textures/crate.jpg", new TSE.Color(0, 128, 255, 255)));
-            var zoneID = TSE.ZoneManager.createTestZone();
-            // Load
-            this._projection = TSE.Matrix4x4.orthographic(0, this._canvas.width, this._canvas.height, 0, -100.0, 100.0);
-            TSE.ZoneManager.changeZone(zoneID);
-            this.resize();
-            this.loop();
+        Object.defineProperty(BaseComponent.prototype, "owner", {
+            get: function () {
+                return this._owner;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        BaseComponent.prototype.setOwner = function (owner) {
+            this._owner = owner;
         };
-        /**
-         * Resizes the canvas to fit the window.
-         * */
-        Engine.prototype.resize = function () {
-            if (this._canvas !== undefined) {
-                this._canvas.width = window.innerWidth;
-                this._canvas.height = window.innerHeight;
-                TSE.gl.viewport(0, 0, TSE.gl.canvas.width, TSE.gl.canvas.height);
-                this._projection = TSE.Matrix4x4.orthographic(0, this._canvas.width, this._canvas.height, 0, -100.0, 100.0);
-            }
+        BaseComponent.prototype.load = function () {
         };
-        Engine.prototype.loop = function () {
-            TSE.MessageBus.update(0);
-            TSE.ZoneManager.update(0);
-            TSE.gl.clear(TSE.gl.COLOR_BUFFER_BIT);
-            TSE.ZoneManager.render(this._basicShader);
-            // Set uniforms.
-            var projectionPosition = this._basicShader.getUniformLocation("u_projection");
-            TSE.gl.uniformMatrix4fv(projectionPosition, false, new Float32Array(this._projection.data));
-            //
-            requestAnimationFrame(this.loop.bind(this));
+        BaseComponent.prototype.update = function (time) {
         };
-        return Engine;
+        BaseComponent.prototype.render = function (shader) {
+        };
+        return BaseComponent;
     }());
-    TSE.Engine = Engine;
+    TSE.BaseComponent = BaseComponent;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    /**
-     * Responsible for setting up a WebGL rendering context.
-     * */
-    var GLUtilities = /** @class */ (function () {
+    var SpriteComponent = (function (_super) {
+        __extends(SpriteComponent, _super);
+        function SpriteComponent(name, materialName) {
+            var _this = _super.call(this, name) || this;
+            _this._sprite = new TSE.Sprite(name, materialName);
+            return _this;
+        }
+        SpriteComponent.prototype.load = function () {
+            this._sprite.load();
+        };
+        SpriteComponent.prototype.render = function (shader) {
+            this._sprite.draw(shader, this.owner.worldMatrix);
+            _super.prototype.render.call(this, shader);
+        };
+        return SpriteComponent;
+    }(TSE.BaseComponent));
+    TSE.SpriteComponent = SpriteComponent;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var GLUtilities = (function () {
         function GLUtilities() {
         }
-        /**
-         * Initializes WebGL, potentially using the canvas with an assigned id matching the provided if it is defined.
-         * @param elementId The id of the elment to search for.
-         */
         GLUtilities.initialize = function (elementId) {
             var canvas;
             if (elementId !== undefined) {
@@ -241,26 +222,13 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    /**
-     * Represents the information needed for a GLBuffer attribute.
-     * */
-    var AttributeInfo = /** @class */ (function () {
+    var AttributeInfo = (function () {
         function AttributeInfo() {
         }
         return AttributeInfo;
     }());
     TSE.AttributeInfo = AttributeInfo;
-    /**
-     * Represents a WebGL buffer.
-     * */
-    var GLBuffer = /** @class */ (function () {
-        /**
-         * Creates a new GL buffer.
-         * @param elementSize The size of each element in this buffer.
-         * @param dataType The data type of this buffer. Default: gl.FLOAT
-         * @param targetBufferType The buffer target type. Can be either gl.ARRAY_BUFFER or gl.ELEMENT_ARRAY_BUFFER. Default: gl.ARRAY_BUFFER
-         * @param mode The drawing mode of this buffer. (i.e. gl.TRIANGLES or gl.LINES). Default: gl.TRIANGLES
-         */
+    var GLBuffer = (function () {
         function GLBuffer(elementSize, dataType, targetBufferType, mode) {
             if (dataType === void 0) { dataType = TSE.gl.FLOAT; }
             if (targetBufferType === void 0) { targetBufferType = TSE.gl.ARRAY_BUFFER; }
@@ -272,7 +240,6 @@ var TSE;
             this._dataType = dataType;
             this._targetBufferType = targetBufferType;
             this._mode = mode;
-            // Determine byte size
             switch (this._dataType) {
                 case TSE.gl.FLOAT:
                 case TSE.gl.INT:
@@ -293,16 +260,9 @@ var TSE;
             this._stride = this._elementSize * this._typeSize;
             this._buffer = TSE.gl.createBuffer();
         }
-        /**
-         * Destroys this buffer.
-         * */
         GLBuffer.prototype.destroy = function () {
             TSE.gl.deleteBuffer(this._buffer);
         };
-        /**
-         * Binds this buffer.
-         * @param normalized Indicates if the data should be normalized. Default: false
-         */
         GLBuffer.prototype.bind = function (normalized) {
             if (normalized === void 0) { normalized = false; }
             TSE.gl.bindBuffer(this._targetBufferType, this._buffer);
@@ -314,9 +274,6 @@ var TSE;
                 }
             }
         };
-        /**
-         * Unbinds this buffer.
-         * */
         GLBuffer.prototype.unbind = function () {
             for (var _i = 0, _a = this._attributes; _i < _a.length; _i++) {
                 var it = _a[_i];
@@ -324,27 +281,16 @@ var TSE;
             }
             TSE.gl.bindBuffer(TSE.gl.ARRAY_BUFFER, this._buffer);
         };
-        /**
-         * Adds an attribute with the provided information to this buffer.
-         * @param info The information to be added.
-         */
         GLBuffer.prototype.addAttributeLocation = function (info) {
             this._hasAttributeLocation = true;
             this._attributes.push(info);
         };
-        /**
-         * Adds data to this buffer.
-         * @param data
-         */
         GLBuffer.prototype.pushBackData = function (data) {
             for (var _i = 0, data_1 = data; _i < data_1.length; _i++) {
                 var d = data_1[_i];
                 this._data.push(d);
             }
         };
-        /**
-         * Uploads this buffer's data to the GPU.
-         * */
         GLBuffer.prototype.upload = function () {
             TSE.gl.bindBuffer(this._targetBufferType, this._buffer);
             var bufferData;
@@ -373,9 +319,6 @@ var TSE;
             }
             TSE.gl.bufferData(this._targetBufferType, bufferData, TSE.gl.STATIC_DRAW);
         };
-        /**
-         * Draws this buffer.
-         * */
         GLBuffer.prototype.draw = function () {
             if (this._targetBufferType === TSE.gl.ARRAY_BUFFER) {
                 TSE.gl.drawArrays(this._mode, 0, this._data.length / this._elementSize);
@@ -390,49 +333,28 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    /**
-     * Represents a WebGL shader.
-     * */
-    var Shader = /** @class */ (function () {
-        /**
-         * Creates a new shader.
-         * @param name The name of this shader.
-         */
+    var Shader = (function () {
         function Shader(name) {
             this._attributes = {};
             this._uniforms = {};
             this._name = name;
         }
         Object.defineProperty(Shader.prototype, "name", {
-            /**
-             * The name of this shader.
-             */
             get: function () {
                 return this._name;
             },
             enumerable: true,
             configurable: true
         });
-        /**
-         * Use this shader.
-         * */
         Shader.prototype.use = function () {
             TSE.gl.useProgram(this._program);
         };
-        /**
-         * Gets the location of an attribute with the provided name.
-         * @param name The name of the attribute whose location to retrieve.
-         */
         Shader.prototype.getAttributeLocation = function (name) {
             if (this._attributes[name] === undefined) {
                 throw new Error("Unable to find attribute named '" + name + "' in shader named '" + this._name + "'");
             }
             return this._attributes[name];
         };
-        /**
-         * Gets the location of an uniform with the provided name.
-         * @param name The name of the uniform whose location to retrieve.
-         */
         Shader.prototype.getUniformLocation = function (name) {
             if (this._uniforms[name] === undefined) {
                 throw new Error("Unable to find uniform named '" + name + "' in shader named '" + this._name + "'");
@@ -492,7 +414,7 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    var BasicShader = /** @class */ (function (_super) {
+    var BasicShader = (function (_super) {
         __extends(BasicShader, _super);
         function BasicShader() {
             var _this = _super.call(this, "basic") || this;
@@ -511,7 +433,7 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    var Color = /** @class */ (function () {
+    var Color = (function () {
         function Color(r, g, b, a) {
             if (r === void 0) { r = 255; }
             if (g === void 0) { g = 255; }
@@ -620,7 +542,7 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    var Material = /** @class */ (function () {
+    var Material = (function () {
         function Material(name, diffuseTextureName, tint) {
             this._name = name;
             this._diffuseTextureName = diffuseTextureName;
@@ -676,14 +598,14 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    var MaterialReferenceNode = /** @class */ (function () {
+    var MaterialReferenceNode = (function () {
         function MaterialReferenceNode(material) {
             this.referenceCount = 1;
             this.material = material;
         }
         return MaterialReferenceNode;
     }());
-    var MaterialManager = /** @class */ (function () {
+    var MaterialManager = (function () {
         function MaterialManager() {
         }
         MaterialManager.registerMaterial = function (material) {
@@ -720,17 +642,7 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    /**
-     * Represents a 2-dimensional sprite which is drawn on the screen.
-     * */
-    var Sprite = /** @class */ (function () {
-        /**
-         * Creates a new sprite.
-         * @param name The name of this sprite.
-         * @param materialName The name of the material to use with this sprite.
-         * @param width The width of this sprite.
-         * @param height The height of this sprite.
-         */
+    var Sprite = (function () {
         function Sprite(name, materialName, width, height) {
             if (width === void 0) { width = 100; }
             if (height === void 0) { height = 100; }
@@ -753,9 +665,6 @@ var TSE;
             this._material = undefined;
             this._materialName = undefined;
         };
-        /**
-         * Performs loading routines on this sprite.
-         * */
         Sprite.prototype.load = function () {
             this._buffer = new TSE.GLBuffer(5);
             var positionAttribute = new TSE.AttributeInfo();
@@ -769,7 +678,6 @@ var TSE;
             texCoordAttribute.size = 2;
             this._buffer.addAttributeLocation(texCoordAttribute);
             var vertices = [
-                // x,y,z   ,u, v
                 0, 0, 0, 0, 0,
                 0, this._height, 0, 0, 1.0,
                 this._width, this._height, 0, 1.0, 1.0,
@@ -781,13 +689,8 @@ var TSE;
             this._buffer.upload();
             this._buffer.unbind();
         };
-        /**
-         * Performs update routines on this sprite.
-         * @param time The delta time in milliseconds since the last update call.
-         */
         Sprite.prototype.update = function (time) {
         };
-        /** Draws this sprite. */
         Sprite.prototype.draw = function (shader, model) {
             var modelLocation = shader.getUniformLocation("u_model");
             TSE.gl.uniformMatrix4fv(modelLocation, false, model.toFloat32Array());
@@ -810,7 +713,7 @@ var TSE;
     var LEVEL = 0;
     var BORDER = 0;
     var TEMP_IMAGE_DATA = new Uint8Array([255, 255, 255, 255]);
-    var Texture = /** @class */ (function () {
+    var Texture = (function () {
         function Texture(name, width, height) {
             if (width === void 0) { width = 1; }
             if (height === void 0) { height = 1; }
@@ -883,7 +786,6 @@ var TSE;
                 TSE.gl.generateMipmap(TSE.gl.TEXTURE_2D);
             }
             else {
-                // Do not generate a mip map and clamp wrapping to edge.
                 TSE.gl.texParameteri(TSE.gl.TEXTURE_2D, TSE.gl.TEXTURE_WRAP_S, TSE.gl.CLAMP_TO_EDGE);
                 TSE.gl.texParameteri(TSE.gl.TEXTURE_2D, TSE.gl.TEXTURE_WRAP_T, TSE.gl.CLAMP_TO_EDGE);
                 TSE.gl.texParameteri(TSE.gl.TEXTURE_2D, TSE.gl.TEXTURE_MIN_FILTER, TSE.gl.LINEAR);
@@ -902,14 +804,14 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    var TextureReferenceNode = /** @class */ (function () {
+    var TextureReferenceNode = (function () {
         function TextureReferenceNode(texture) {
             this.referenceCount = 1;
             this.texture = texture;
         }
         return TextureReferenceNode;
     }());
-    var TextureManager = /** @class */ (function () {
+    var TextureManager = (function () {
         function TextureManager() {
         }
         TextureManager.getTexture = function (textureName) {
@@ -942,9 +844,7 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    /** A 4x4 matrix to be used for transformations. */
-    var Matrix4x4 = /** @class */ (function () {
-        /** Creates a new matrix 4x4. Marked as private to enforce the use of static methods. */
+    var Matrix4x4 = (function () {
         function Matrix4x4() {
             this._data = [];
             this._data = [
@@ -955,26 +855,15 @@ var TSE;
             ];
         }
         Object.defineProperty(Matrix4x4.prototype, "data", {
-            /** Returns the data contained in this matrix as an array of numbers. */
             get: function () {
                 return this._data;
             },
             enumerable: true,
             configurable: true
         });
-        /** Creates and returns an identity matrix. */
         Matrix4x4.identity = function () {
             return new Matrix4x4();
         };
-        /**
-         * Creates and returns a new orthographic projection matrix.
-         * @param left The left extents of the viewport.
-         * @param right The right extents of the viewport.
-         * @param bottom The bottom extents of the viewport.
-         * @param top The top extents of the viewport.
-         * @param nearClip The near clipping plane.
-         * @param farClip The far clipping plane.
-         */
         Matrix4x4.orthographic = function (left, right, bottom, top, nearClip, farClip) {
             var m = new Matrix4x4();
             var lr = 1.0 / (left - right);
@@ -988,10 +877,6 @@ var TSE;
             m._data[14] = (farClip + nearClip) * nf;
             return m;
         };
-        /**
-         * Creates a transformation matrix using the provided position.
-         * @param position The position to be used in transformation.
-         */
         Matrix4x4.translation = function (position) {
             var m = new Matrix4x4();
             m._data[12] = position.x;
@@ -1033,7 +918,6 @@ var TSE;
             var rx = Matrix4x4.rotationX(xRadians);
             var ry = Matrix4x4.rotationY(yRadians);
             var rz = Matrix4x4.rotationZ(zRadians);
-            // ZYX
             return Matrix4x4.multiply(Matrix4x4.multiply(rz, ry), rx);
         };
         Matrix4x4.scale = function (scale) {
@@ -1095,7 +979,6 @@ var TSE;
             m._data[15] = b30 * a03 + b31 * a13 + b32 * a23 + b33 * a33;
             return m;
         };
-        /** Returns the data of this matrix as a Float32Array. */
         Matrix4x4.prototype.toFloat32Array = function () {
             return new Float32Array(this._data);
         };
@@ -1110,13 +993,30 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    /** Represents a 2-component vector. */
-    var Vector2 = /** @class */ (function () {
-        /**
-         * Creates a new vector 2.
-         * @param x The x component.
-         * @param y The y component.
-         */
+    var Transform = (function () {
+        function Transform() {
+            this.position = TSE.Vector3.zero;
+            this.rotation = TSE.Vector3.zero;
+            this.scale = TSE.Vector3.one;
+        }
+        Transform.prototype.copyFrom = function (transform) {
+            this.position.copyFrom(transform.position);
+            this.rotation.copyFrom(transform.rotation);
+            this.scale.copyFrom(transform.scale);
+        };
+        Transform.prototype.getTransformationMatrix = function () {
+            var translation = TSE.Matrix4x4.translation(this.position);
+            var rotation = TSE.Matrix4x4.rotationXYZ(this.rotation.x, this.rotation.y, this.rotation.z);
+            var scale = TSE.Matrix4x4.scale(this.scale);
+            return TSE.Matrix4x4.multiply(TSE.Matrix4x4.multiply(translation, rotation), scale);
+        };
+        return Transform;
+    }());
+    TSE.Transform = Transform;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var Vector2 = (function () {
         function Vector2(x, y) {
             if (x === void 0) { x = 0; }
             if (y === void 0) { y = 0; }
@@ -1124,11 +1024,9 @@ var TSE;
             this._y = y;
         }
         Object.defineProperty(Vector2.prototype, "x", {
-            /** The x component. */
             get: function () {
                 return this._x;
             },
-            /** The x component. */
             set: function (value) {
                 this._x = value;
             },
@@ -1136,22 +1034,18 @@ var TSE;
             configurable: true
         });
         Object.defineProperty(Vector2.prototype, "y", {
-            /** The y component. */
             get: function () {
                 return this._y;
             },
-            /** The y component. */
             set: function (value) {
                 this._y = value;
             },
             enumerable: true,
             configurable: true
         });
-        /** Returns the data of this vector as a number array. */
         Vector2.prototype.toArray = function () {
             return [this._x, this._y];
         };
-        /** Returns the data of this vector as a Float32Array. */
         Vector2.prototype.toFloat32Array = function () {
             return new Float32Array(this.toArray());
         };
@@ -1161,14 +1055,7 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    /** Represents a 3-component vector. */
-    var Vector3 = /** @class */ (function () {
-        /**
-         * Creates a new vector 3.
-         * @param x The x component.
-         * @param y The y component.
-         * @param z The z component.
-         */
+    var Vector3 = (function () {
         function Vector3(x, y, z) {
             if (x === void 0) { x = 0; }
             if (y === void 0) { y = 0; }
@@ -1178,11 +1065,9 @@ var TSE;
             this._z = z;
         }
         Object.defineProperty(Vector3.prototype, "x", {
-            /** The x component. */
             get: function () {
                 return this._x;
             },
-            /** The x component. */
             set: function (value) {
                 this._x = value;
             },
@@ -1190,11 +1075,9 @@ var TSE;
             configurable: true
         });
         Object.defineProperty(Vector3.prototype, "y", {
-            /** The y component. */
             get: function () {
                 return this._y;
             },
-            /** The y component. */
             set: function (value) {
                 this._y = value;
             },
@@ -1202,11 +1085,9 @@ var TSE;
             configurable: true
         });
         Object.defineProperty(Vector3.prototype, "z", {
-            /** The z component. */
             get: function () {
                 return this._z;
             },
-            /** The z component. */
             set: function (value) {
                 this._z = value;
             },
@@ -1227,11 +1108,9 @@ var TSE;
             enumerable: true,
             configurable: true
         });
-        /** Returns the data of this vector as a number array. */
         Vector3.prototype.toArray = function () {
             return [this._x, this._y, this._z];
         };
-        /** Returns the data of this vector as a Float32Array. */
         Vector3.prototype.toFloat32Array = function () {
             return new Float32Array(this.toArray());
         };
@@ -1246,23 +1125,12 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    /** Represents message priorities. */
     var MessagePriority;
     (function (MessagePriority) {
-        /** Normal message priority, meaning the message is sent as soon as the queue allows. */
         MessagePriority[MessagePriority["NORMAL"] = 0] = "NORMAL";
-        /** High message priority, meaning the message is sent immediately. */
         MessagePriority[MessagePriority["HIGH"] = 1] = "HIGH";
     })(MessagePriority = TSE.MessagePriority || (TSE.MessagePriority = {}));
-    /** Represents a message which can be sent and processed across the system. */
-    var Message = /** @class */ (function () {
-        /**
-         * Creates a new message.
-         * @param code The code for this message, which is subscribed to and listened for.
-         * @param sender The class instance which sent this message.
-         * @param context Free-form context data to be included with this message.
-         * @param priority The priority of this message.
-         */
+    var Message = (function () {
         function Message(code, sender, context, priority) {
             if (priority === void 0) { priority = MessagePriority.NORMAL; }
             this.code = code;
@@ -1270,37 +1138,15 @@ var TSE;
             this.context = context;
             this.priority = priority;
         }
-        /**
-         * Sends a normal-priority message with the provided parameters.
-         * @param code The code for this message, which is subscribed to and listened for.
-         * @param sender The class instance which sent this message.
-         * @param context Free-form context data to be included with this message.
-         */
         Message.send = function (code, sender, context) {
             TSE.MessageBus.post(new Message(code, sender, context, MessagePriority.NORMAL));
         };
-        /**
-         * Sends a high-priority message with the provided parameters.
-         * @param code The code for this message, which is subscribed to and listened for.
-         * @param sender The class instance which sent this message.
-         * @param context Free-form context data to be included with this message.
-         */
         Message.sendPriority = function (code, sender, context) {
             TSE.MessageBus.post(new Message(code, sender, context, MessagePriority.HIGH));
         };
-        /**
-         * Subscribes the provided handler to listen for the message code provided.
-         * @param code The code to listen for.
-         * @param handler The message handler to be called when a message containing the provided code is sent.
-         */
         Message.subscribe = function (code, handler) {
             TSE.MessageBus.addSubscription(code, handler);
         };
-        /**
-         * Unsubscribes the provided handler from listening for the message code provided.
-         * @param code The code to no longer listen for.
-         * @param handler The message handler to unsubscribe.
-         */
         Message.unsubscribe = function (code, handler) {
             TSE.MessageBus.removeSubscription(code, handler);
         };
@@ -1310,16 +1156,9 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    /** The message manager responsible for sending messages across the system. */
-    var MessageBus = /** @class */ (function () {
-        /** Constructor hidden to prevent instantiation. */
+    var MessageBus = (function () {
         function MessageBus() {
         }
-        /**
-         * Adds a subscription to the provided code using the provided handler.
-         * @param code The code to listen for.
-         * @param handler The handler to be subscribed.
-         */
         MessageBus.addSubscription = function (code, handler) {
             if (MessageBus._subscriptions[code] === undefined) {
                 MessageBus._subscriptions[code] = [];
@@ -1331,11 +1170,6 @@ var TSE;
                 MessageBus._subscriptions[code].push(handler);
             }
         };
-        /**
-         * Removes a subscription to the provided code using the provided handler.
-         * @param code The code to no longer listen for.
-         * @param handler The handler to be unsubscribed.
-         */
         MessageBus.removeSubscription = function (code, handler) {
             if (MessageBus._subscriptions[code] === undefined) {
                 console.warn("Cannot unsubscribe handler from code: " + code + " Because that code is not subscribed to.");
@@ -1346,10 +1180,6 @@ var TSE;
                 MessageBus._subscriptions[code].splice(nodeIndex, 1);
             }
         };
-        /**
-         * Posts the provided message to the message system.
-         * @param message The message to be sent.
-         */
         MessageBus.post = function (message) {
             console.log("Message posted:", message);
             var handlers = MessageBus._subscriptions[message.code];
@@ -1366,10 +1196,6 @@ var TSE;
                 }
             }
         };
-        /**
-         * Performs update routines on this message bus.
-         * @param time The delta time in milliseconds since the last update.
-         */
         MessageBus.update = function (time) {
             if (MessageBus._normalMessageQueue.length === 0) {
                 return;
@@ -1389,7 +1215,7 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    var MessageSubscriptionNode = /** @class */ (function () {
+    var MessageSubscriptionNode = (function () {
         function MessageSubscriptionNode(message, handler) {
             this.message = message;
             this.handler = handler;
@@ -1400,31 +1226,146 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    var Transform = /** @class */ (function () {
-        function Transform() {
-            this.position = TSE.Vector3.zero;
-            this.rotation = TSE.Vector3.zero;
-            this.scale = TSE.Vector3.one;
+    var ZoneState;
+    (function (ZoneState) {
+        ZoneState[ZoneState["UNINITIALIZED"] = 0] = "UNINITIALIZED";
+        ZoneState[ZoneState["LOADING"] = 1] = "LOADING";
+        ZoneState[ZoneState["UPDATING"] = 2] = "UPDATING";
+    })(ZoneState = TSE.ZoneState || (TSE.ZoneState = {}));
+    var Zone = (function () {
+        function Zone(id, name, description) {
+            this._state = ZoneState.UNINITIALIZED;
+            this._id = id;
+            this._name = name;
+            this._description = description;
+            this._scene = new TSE.Scene();
         }
-        Transform.prototype.copyFrom = function (transform) {
-            this.position.copyFrom(transform.position);
-            this.rotation.copyFrom(transform.rotation);
-            this.scale.copyFrom(transform.scale);
+        Object.defineProperty(Zone.prototype, "id", {
+            get: function () {
+                return this._id;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Zone.prototype, "name", {
+            get: function () {
+                return this._name;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Zone.prototype, "description", {
+            get: function () {
+                return this._description;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Zone.prototype, "scene", {
+            get: function () {
+                return this._scene;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Zone.prototype.load = function () {
+            this._state = ZoneState.LOADING;
+            this._scene.load();
+            this._state = ZoneState.UPDATING;
         };
-        Transform.prototype.getTransformationMatrix = function () {
-            var translation = TSE.Matrix4x4.translation(this.position);
-            var rotation = TSE.Matrix4x4.rotationXYZ(this.rotation.x, this.rotation.y, this.rotation.z);
-            var scale = TSE.Matrix4x4.scale(this.scale);
-            // T * R * S
-            return TSE.Matrix4x4.multiply(TSE.Matrix4x4.multiply(translation, rotation), scale);
+        Zone.prototype.unload = function () {
         };
-        return Transform;
+        Zone.prototype.update = function (time) {
+            if (this._state === ZoneState.UPDATING) {
+                this._scene.update(time);
+            }
+        };
+        Zone.prototype.render = function (shader) {
+            if (this._state === ZoneState.UPDATING) {
+                this._scene.render(shader);
+            }
+        };
+        Zone.prototype.onActivated = function () {
+        };
+        Zone.prototype.onDeactivated = function () {
+        };
+        return Zone;
     }());
-    TSE.Transform = Transform;
+    TSE.Zone = Zone;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    var SimObject = /** @class */ (function () {
+    var TestZone = (function (_super) {
+        __extends(TestZone, _super);
+        function TestZone() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        TestZone.prototype.load = function () {
+            this._parentObject = new TSE.SimObject(0, "parentObject");
+            this._parentObject.transform.position.x = 300;
+            this._parentObject.transform.position.y = 300;
+            this._parentSprite = new TSE.SpriteComponent("test", "crate");
+            this._parentObject.addComponent(this._parentSprite);
+            this._testObject = new TSE.SimObject(1, "testObject");
+            this._testSprite = new TSE.SpriteComponent("test", "crate");
+            this._testObject.addComponent(this._testSprite);
+            this._testObject.transform.position.x = 120;
+            this._testObject.transform.position.y = 120;
+            this._parentObject.addChild(this._testObject);
+            this.scene.addObject(this._parentObject);
+            _super.prototype.load.call(this);
+        };
+        TestZone.prototype.update = function (time) {
+            this._parentObject.transform.rotation.z += 0.01;
+            this._testObject.transform.rotation.z += 0.01;
+            _super.prototype.update.call(this, time);
+        };
+        return TestZone;
+    }(TSE.Zone));
+    TSE.TestZone = TestZone;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var Scene = (function () {
+        function Scene() {
+            this._root = new TSE.SimObject(0, "__ROOT__", this);
+        }
+        Object.defineProperty(Scene.prototype, "root", {
+            get: function () {
+                return this._root;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene.prototype, "isLoaded", {
+            get: function () {
+                return this._root.isLoaded;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Scene.prototype.addObject = function (object) {
+            this._root.addChild(object);
+        };
+        Scene.prototype.getObjectByName = function (name) {
+            return this._root.getObjectByName(name);
+        };
+        Scene.prototype.load = function () {
+            this._root.load();
+        };
+        Scene.prototype.update = function (time) {
+            this._root.update(time);
+        };
+        Scene.prototype.render = function (shader) {
+            this._root.render(shader);
+        };
+        return Scene;
+    }());
+    TSE.Scene = Scene;
+})(TSE || (TSE = {}));
+var TSE;
+(function (TSE) {
+    var SimObject = (function () {
         function SimObject(id, name, scene) {
             this._children = [];
             this._isLoaded = false;
@@ -1543,115 +1484,7 @@ var TSE;
 })(TSE || (TSE = {}));
 var TSE;
 (function (TSE) {
-    var Scene = /** @class */ (function () {
-        function Scene() {
-            this._root = new TSE.SimObject(0, "__ROOT__", this);
-        }
-        Object.defineProperty(Scene.prototype, "root", {
-            get: function () {
-                return this._root;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Scene.prototype, "isLoaded", {
-            get: function () {
-                return this._root.isLoaded;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Scene.prototype.addObject = function (object) {
-            this._root.addChild(object);
-        };
-        Scene.prototype.getObjectByName = function (name) {
-            return this._root.getObjectByName(name);
-        };
-        Scene.prototype.load = function () {
-            this._root.load();
-        };
-        Scene.prototype.update = function (time) {
-            this._root.update(time);
-        };
-        Scene.prototype.render = function (shader) {
-            this._root.render(shader);
-        };
-        return Scene;
-    }());
-    TSE.Scene = Scene;
-})(TSE || (TSE = {}));
-var TSE;
-(function (TSE) {
-    var ZoneState;
-    (function (ZoneState) {
-        ZoneState[ZoneState["UNINITIALIZED"] = 0] = "UNINITIALIZED";
-        ZoneState[ZoneState["LOADING"] = 1] = "LOADING";
-        ZoneState[ZoneState["UPDATING"] = 2] = "UPDATING";
-    })(ZoneState = TSE.ZoneState || (TSE.ZoneState = {}));
-    var Zone = /** @class */ (function () {
-        function Zone(id, name, description) {
-            this._state = ZoneState.UNINITIALIZED;
-            this._id = id;
-            this._name = name;
-            this._description = description;
-            this._scene = new TSE.Scene();
-        }
-        Object.defineProperty(Zone.prototype, "id", {
-            get: function () {
-                return this._id;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Zone.prototype, "name", {
-            get: function () {
-                return this._name;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Zone.prototype, "description", {
-            get: function () {
-                return this._description;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Zone.prototype, "scene", {
-            get: function () {
-                return this._scene;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Zone.prototype.load = function () {
-            this._state = ZoneState.LOADING;
-            this._scene.load();
-            this._state = ZoneState.UPDATING;
-        };
-        Zone.prototype.unload = function () {
-        };
-        Zone.prototype.update = function (time) {
-            if (this._state === ZoneState.UPDATING) {
-                this._scene.update(time);
-            }
-        };
-        Zone.prototype.render = function (shader) {
-            if (this._state === ZoneState.UPDATING) {
-                this._scene.render(shader);
-            }
-        };
-        Zone.prototype.onActivated = function () {
-        };
-        Zone.prototype.onDeactivated = function () {
-        };
-        return Zone;
-    }());
-    TSE.Zone = Zone;
-})(TSE || (TSE = {}));
-var TSE;
-(function (TSE) {
-    var ZoneManager = /** @class */ (function () {
+    var ZoneManager = (function () {
         function ZoneManager() {
         }
         ZoneManager.createZone = function (name, description) {
@@ -1660,7 +1493,6 @@ var TSE;
             ZoneManager._zones[ZoneManager._globalZoneID] = zone;
             return ZoneManager._globalZoneID;
         };
-        // TODO: This is temporary code until file loading is supported.
         ZoneManager.createTestZone = function () {
             ZoneManager._globalZoneID++;
             var zone = new TSE.TestZone(ZoneManager._globalZoneID, "test", "A simple test zone");
@@ -1693,82 +1525,5 @@ var TSE;
         return ZoneManager;
     }());
     TSE.ZoneManager = ZoneManager;
-})(TSE || (TSE = {}));
-/// <reference path="zone.ts" />
-var TSE;
-(function (TSE) {
-    var TestZone = /** @class */ (function (_super) {
-        __extends(TestZone, _super);
-        function TestZone() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        TestZone.prototype.load = function () {
-            this._parentObject = new TSE.SimObject(0, "parentObject");
-            this._parentObject.transform.position.x = 300;
-            this._parentObject.transform.position.y = 300;
-            this._parentSprite = new TSE.SpriteComponent("test", "crate");
-            this._parentObject.addComponent(this._parentSprite);
-            this._testObject = new TSE.SimObject(1, "testObject");
-            this._testSprite = new TSE.SpriteComponent("test", "crate");
-            this._testObject.addComponent(this._testSprite);
-            this._testObject.transform.position.x = 120;
-            this._testObject.transform.position.y = 120;
-            this._parentObject.addChild(this._testObject);
-            this.scene.addObject(this._parentObject);
-            _super.prototype.load.call(this);
-        };
-        TestZone.prototype.update = function (time) {
-            this._parentObject.transform.rotation.z += 0.01;
-            this._testObject.transform.rotation.z += 0.01;
-            _super.prototype.update.call(this, time);
-        };
-        return TestZone;
-    }(TSE.Zone));
-    TSE.TestZone = TestZone;
-})(TSE || (TSE = {}));
-var TSE;
-(function (TSE) {
-    var BaseComponent = /** @class */ (function () {
-        function BaseComponent(name) {
-        }
-        Object.defineProperty(BaseComponent.prototype, "owner", {
-            get: function () {
-                return this._owner;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        BaseComponent.prototype.setOwner = function (owner) {
-            this._owner = owner;
-        };
-        BaseComponent.prototype.load = function () {
-        };
-        BaseComponent.prototype.update = function (time) {
-        };
-        BaseComponent.prototype.render = function (shader) {
-        };
-        return BaseComponent;
-    }());
-    TSE.BaseComponent = BaseComponent;
-})(TSE || (TSE = {}));
-var TSE;
-(function (TSE) {
-    var SpriteComponent = /** @class */ (function (_super) {
-        __extends(SpriteComponent, _super);
-        function SpriteComponent(name, materialName) {
-            var _this = _super.call(this, name) || this;
-            _this._sprite = new TSE.Sprite(name, materialName);
-            return _this;
-        }
-        SpriteComponent.prototype.load = function () {
-            this._sprite.load();
-        };
-        SpriteComponent.prototype.render = function (shader) {
-            this._sprite.draw(shader, this.owner.worldMatrix);
-            _super.prototype.render.call(this, shader);
-        };
-        return SpriteComponent;
-    }(TSE.BaseComponent));
-    TSE.SpriteComponent = SpriteComponent;
 })(TSE || (TSE = {}));
 //# sourceMappingURL=main.js.map
