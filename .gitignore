@@ -331,7 +331,7 @@ ASALocalRun/
 
 # Ignore generated Javascript files.
 *.js
-*.map.js
+*.js.map
 
 # TypeScript Definition files.
 *.d.ts
