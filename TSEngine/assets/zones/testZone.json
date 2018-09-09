@@ -19,7 +19,21 @@
 							"x": 120,
 							"y": 120
 						}
-					}
+					},
+					"components": [
+						{
+							"name": "test",
+							"type": "sprite",
+							"materialName": "crate"
+						}
+					]
+				}
+			],
+			"components": [
+				{
+					"name": "test",
+					"type": "sprite",
+					"materialName": "crate"
 				}
 			]
 		}

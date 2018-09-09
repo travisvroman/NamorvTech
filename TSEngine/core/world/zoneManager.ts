@@ -54,13 +54,15 @@
         }
 
         public onMessage( message: Message ): void {
-            if ( message.code.indexOf( MESSAGE_ASSET_LOADER_ASSET_LOADED ) ) {
+            if ( message.code.indexOf( MESSAGE_ASSET_LOADER_ASSET_LOADED ) !== -1 ) {
+                console.log( "zone loaded:" + message.code );
                 let asset = message.context as JsonAsset;
                 ZoneManager.loadZone( asset );
             }
         }
 
         private static loadZone( asset: JsonAsset ): void {
+            console.log( "Loading zone:" + asset.name );
             let zoneData = asset.data;
             let zoneId: number;
             if ( zoneData.id === undefined ) {
