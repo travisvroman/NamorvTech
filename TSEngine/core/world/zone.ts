@@ -16,6 +16,7 @@
         private _description: string;
         private _scene: Scene;
         private _state: ZoneState = ZoneState.UNINITIALIZED;
+        private _globalID: number = -1;
 
         public constructor( id: number, name: string, description: string ) {
             this._id = id;
@@ -39,6 +40,18 @@
 
         public get scene(): Scene {
             return this._scene;
+        }
+
+        public initialize( zoneData: any ): void {
+            if ( zoneData.objects === undefined ) {
+                throw new Error( "Zone initialization error: objects not present." );
+            }
+
+            for ( let o in zoneData.objects ) {
+                let obj = zoneData.objects[o];
+
+                this.loadSimObject( obj, this._scene.root );
+            }
         }
 
         public load(): void {
@@ -71,6 +84,32 @@
 
         public onDeactivated(): void {
 
+        }
+
+        private loadSimObject( dataSection: any, parent: SimObject ): void {
+
+            let name: string;
+            if ( dataSection.name !== undefined ) {
+                name = String( dataSection.name );
+            }
+
+            this._globalID++;
+            let simObject = new SimObject( this._globalID, name, this._scene );
+
+            if ( dataSection.transform !== undefined ) {
+                simObject.transform.setFromJson( dataSection.transform );
+            }
+
+            if ( dataSection.children !== undefined ) {
+                for ( let o in dataSection.children ) {
+                    let obj = dataSection.children[o];
+                    this.loadSimObject( obj, simObject );
+                }
+            }
+
+            if ( parent !== undefined ) {
+                parent.addChild( simObject );
+            }
         }
     }
 }

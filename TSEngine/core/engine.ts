@@ -24,20 +24,21 @@
 
             this._canvas = GLUtilities.initialize();
             AssetManager.initialize();
+            ZoneManager.initialize();
 
             gl.clearColor( 0, 0, 0, 1 );
 
             this._basicShader = new BasicShader();
             this._basicShader.use();
-            
+
             // Load materials
             MaterialManager.registerMaterial( new Material( "crate", "assets/textures/crate.jpg", new Color( 0, 128, 255, 255 ) ) );
 
-            let zoneID = ZoneManager.createTestZone();
-            
             // Load
             this._projection = Matrix4x4.orthographic( 0, this._canvas.width, this._canvas.height, 0, -100.0, 100.0 );
-            ZoneManager.changeZone( zoneID );
+
+            // TODO: Change this to be read from a game configuration later.
+            ZoneManager.changeZone( 0 );
 
             this.resize();
             this.loop();

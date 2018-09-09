@@ -73,5 +73,19 @@ namespace TSE {
             this._y = vector._y;
             this._z = vector._z;
         }
+
+        public setFromJson( json: any ): void {
+            if ( json.x !== undefined ) {
+                this._x = Number( json.x );
+            }
+
+            if ( json.y !== undefined ) {
+                this._y = Number( json.y );
+            }
+
+            if ( json.z !== undefined ) {
+                this._z = Number( json.z );
+            }
+        }
     }
 }

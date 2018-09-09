@@ -104,6 +104,7 @@
     <TypeScriptCompile Include="core\assets\IAsset.ts" />
     <TypeScriptCompile Include="core\assets\IAssetLoader.ts" />
     <TypeScriptCompile Include="core\assets\imageAssetLoader.ts" />
+    <TypeScriptCompile Include="core\assets\jsonAssetLoader.ts" />
     <TypeScriptCompile Include="core\components\baseComponent.ts" />
     <TypeScriptCompile Include="core\components\spriteComponent.ts" />
     <TypeScriptCompile Include="core\engine.ts" />

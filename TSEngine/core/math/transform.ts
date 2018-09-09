@@ -29,5 +29,19 @@
             // T * R * S
             return Matrix4x4.multiply( Matrix4x4.multiply( translation, rotation ), scale );
         }
+
+        public setFromJson( json: any ): void {
+            if ( json.position !== undefined ) {
+                this.position.setFromJson( json.position );
+            }
+
+            if ( json.rotation !== undefined ) {
+                this.rotation.setFromJson( json.rotation );
+            }
+
+            if ( json.scale !== undefined ) {
+                this.scale.setFromJson( json.scale );
+            }
+        }
     }
 }
