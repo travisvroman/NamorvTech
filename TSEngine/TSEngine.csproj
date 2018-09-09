@@ -105,6 +105,12 @@
     <TypeScriptCompile Include="core\assets\IAssetLoader.ts" />
     <TypeScriptCompile Include="core\assets\imageAssetLoader.ts" />
     <TypeScriptCompile Include="core\assets\jsonAssetLoader.ts" />
+    <TypeScriptCompile Include="core\behaviors\baseBehavior.ts" />
+    <TypeScriptCompile Include="core\behaviors\behaviorManager.ts" />
+    <TypeScriptCompile Include="core\behaviors\IBehavior.ts" />
+    <TypeScriptCompile Include="core\behaviors\IBehaviorBuilder.ts" />
+    <TypeScriptCompile Include="core\behaviors\IBehaviorData.ts" />
+    <TypeScriptCompile Include="core\behaviors\rotationBehavior.ts" />
     <TypeScriptCompile Include="core\components\baseComponent.ts" />
     <TypeScriptCompile Include="core\components\componentManager.ts" />
     <TypeScriptCompile Include="core\components\IComponent.ts" />
