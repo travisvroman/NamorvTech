@@ -40,6 +40,8 @@
             MaterialManager.registerMaterial( new Material( "crate", "assets/textures/crate.jpg", Color.white() ) );
             MaterialManager.registerMaterial( new Material( "duck", "assets/textures/duck.png", Color.white() ) );
 
+            AudioManager.loadSoundFile( "flap", "assets/sounds/flap.mp3", false );
+
             // Load
             this._projection = Matrix4x4.orthographic( 0, this._canvas.width, this._canvas.height, 0, -100.0, 100.0 );
 
@@ -67,6 +69,8 @@
             if ( message.code === "MOUSE_UP" ) {
                 let context = message.context as MouseContext;
                 document.title = `Pos: [${context.position.x},${context.position.y}]`;
+
+                AudioManager.playSound( "flap" );
             }
         }
 
