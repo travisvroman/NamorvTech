@@ -110,7 +110,9 @@
     <TypeScriptCompile Include="core\behaviors\IBehavior.ts" />
     <TypeScriptCompile Include="core\behaviors\IBehaviorBuilder.ts" />
     <TypeScriptCompile Include="core\behaviors\IBehaviorData.ts" />
+    <TypeScriptCompile Include="core\behaviors\keyboardMovementBehavior.ts" />
     <TypeScriptCompile Include="core\behaviors\rotationBehavior.ts" />
+    <TypeScriptCompile Include="core\components\animatedSpriteComponent.ts" />
     <TypeScriptCompile Include="core\components\baseComponent.ts" />
     <TypeScriptCompile Include="core\components\componentManager.ts" />
     <TypeScriptCompile Include="core\components\IComponent.ts" />
@@ -122,12 +124,15 @@
     <TypeScriptCompile Include="core\gl\glBuffer.ts" />
     <TypeScriptCompile Include="core\gl\shader.ts" />
     <TypeScriptCompile Include="core\gl\shaders\basicShader.ts" />
+    <TypeScriptCompile Include="core\graphics\animatedSprite.ts" />
     <TypeScriptCompile Include="core\graphics\color.ts" />
     <TypeScriptCompile Include="core\graphics\material.ts" />
     <TypeScriptCompile Include="core\graphics\materialManager.ts" />
     <TypeScriptCompile Include="core\graphics\sprite.ts" />
     <TypeScriptCompile Include="core\graphics\texture.ts" />
     <TypeScriptCompile Include="core\graphics\textureManager.ts" />
+    <TypeScriptCompile Include="core\graphics\vertex.ts" />
+    <TypeScriptCompile Include="core\input\inputManager.ts" />
     <TypeScriptCompile Include="core\math\matrix4x4.ts" />
     <TypeScriptCompile Include="core\math\transform.ts" />
     <TypeScriptCompile Include="core\math\vector2.ts" />

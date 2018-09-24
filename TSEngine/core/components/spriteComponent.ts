@@ -1,4 +1,5 @@
 ﻿/// <reference path="componentmanager.ts" />
+/// <reference path="basecomponent.ts" />
 
 namespace TSE {
 

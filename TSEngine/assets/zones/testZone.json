@@ -4,6 +4,37 @@
 	"id": 0,
 	"objects": [
 		{
+			"name": "duck",
+			"transform": {
+				"position": {
+					"x": 100,
+					"y": 100
+				},
+				"scale": {
+					"x": 8,
+					"y": 8
+				}
+			},
+			"components": [
+				{
+					"name": "duckAnimatedSprite",
+					"type": "animatedSprite",
+					"materialName": "duck",
+					"frameWidth": 17,
+					"frameHeight": 12,
+					"frameCount": 3,
+					"frameSequence": [0,1,2,1]
+				}
+			],
+			"behaviors": [
+				{
+					"name": "movementBehavior",
+					"type": "keyboardMovement",
+					"speed": 2.5
+				}
+			]
+		},
+		{
 			"name": "parentObject",
 			"transform": {
 				"position": {

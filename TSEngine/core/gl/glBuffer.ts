@@ -18,7 +18,7 @@
         /**
          * The number of elements from the beginning of the buffer.
          */
-        public offset: number;
+        public offset: number = 0;
     }
 
     /**
@@ -41,13 +41,12 @@
 
         /**
          * Creates a new GL buffer.
-         * @param elementSize The size of each element in this buffer.
          * @param dataType The data type of this buffer. Default: gl.FLOAT
          * @param targetBufferType The buffer target type. Can be either gl.ARRAY_BUFFER or gl.ELEMENT_ARRAY_BUFFER. Default: gl.ARRAY_BUFFER
          * @param mode The drawing mode of this buffer. (i.e. gl.TRIANGLES or gl.LINES). Default: gl.TRIANGLES
          */
-        public constructor( elementSize: number, dataType: number = gl.FLOAT, targetBufferType: number = gl.ARRAY_BUFFER, mode: number = gl.TRIANGLES ) {
-            this._elementSize = elementSize;
+        public constructor( dataType: number = gl.FLOAT, targetBufferType: number = gl.ARRAY_BUFFER, mode: number = gl.TRIANGLES ) {
+            this._elementSize = 0;
             this._dataType = dataType;
             this._targetBufferType = targetBufferType;
             this._mode = mode;
@@ -70,8 +69,7 @@
                 default:
                     throw new Error( "Unrecognized data type: " + dataType.toString() );
             }
-
-            this._stride = this._elementSize * this._typeSize;
+            
             this._buffer = gl.createBuffer();
         }
 
@@ -114,7 +112,19 @@
          */
         public addAttributeLocation( info: AttributeInfo ): void {
             this._hasAttributeLocation = true;
+            info.offset = this._elementSize;
             this._attributes.push( info );
+            this._elementSize += info.size;
+            this._stride = this._elementSize * this._typeSize;
+        }
+
+        /**
+         * Replaces the current data in this buffer with the provided data.
+         * @param data The data to be loaded in this buffer.
+         */
+        public setData( data: number[] ): void {
+            this.clearData();
+            this.pushBackData( data );
         }
 
         /**
@@ -125,6 +135,13 @@
             for ( let d of data ) {
                 this._data.push( d );
             }
+        }
+
+        /**
+         * Clears out all data in this buffer.
+         * */
+        public clearData(): void {
+            this._data.length = 0;
         }
 
         /** 
