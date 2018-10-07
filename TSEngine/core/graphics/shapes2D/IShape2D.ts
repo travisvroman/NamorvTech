@@ -4,6 +4,8 @@
 
         position: Vector2;
 
+        offset: Vector2;
+
         setFromJson( json: any ): void;
 
         intersects( other: IShape2D ): boolean;

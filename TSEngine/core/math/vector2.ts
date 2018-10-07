@@ -46,7 +46,7 @@ namespace TSE {
         }
 
         public static distance( a: Vector2, b: Vector2 ): number {
-            let diff = a.subtract( b );
+            let diff = a.clone().subtract( b );
             return Math.sqrt( diff.x * diff.x + diff.y * diff.y );
         }
 
@@ -101,6 +101,10 @@ namespace TSE {
             this._y /= v._y;
 
             return this;
+        }
+
+        public clone(): Vector2 {
+            return new Vector2( this._x, this._y );
         }
     }
 }

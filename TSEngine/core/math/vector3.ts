@@ -146,5 +146,13 @@ namespace TSE {
 
             return this;
         }
+
+        public clone(): Vector3 {
+            return new Vector3( this._x, this._y, this._z );
+        }
+
+        public toVector2(): Vector2 {
+            return new Vector2( this._x, this._y );
+        }
     }
 }

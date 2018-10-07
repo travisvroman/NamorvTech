@@ -63,10 +63,40 @@ namespace TSE {
             return this._shape;
         }
 
+        public load(): void {
+            super.load();
+
+            // TODO: need to get world position for nested objects.
+            this._shape.position.copyFrom( this.owner.transform.position.toVector2().add( this._shape.offset ) );
+
+            // Tell the collision manager that we exist.
+            CollisionManager.registerCollisionComponent( this );
+        }
+
+        public update( time: number ): void {
+
+            // TODO: need to get world position for nested objects.
+            this._shape.position.copyFrom( this.owner.transform.position.toVector2().add( this._shape.offset ) );
+
+            super.update( time );
+        }
+
         public render( shader: Shader ): void {
             //this._sprite.draw( shader, this.owner.worldMatrix );
 
             super.render( shader );
+        }
+
+        public onCollisionEntry( other: CollisionComponent ): void {
+            console.log( "onCollisionEntry:", this, other );
+        }
+
+        public onCollisionUpdate( other: CollisionComponent ): void {
+            console.log( "onCollisionUpdate:", this, other );
+        }
+
+        public onCollisionExit( other: CollisionComponent ): void {
+            console.log( "onCollisionExit:", this, other );
         }
     }
 
