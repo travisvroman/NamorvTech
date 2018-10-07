@@ -45,6 +45,11 @@ namespace TSE {
             return new Vector2( 1, 1 );
         }
 
+        public static distance( a: Vector2, b: Vector2 ): number {
+            let diff = a.subtract( b );
+            return Math.sqrt( diff.x * diff.x + diff.y * diff.y );
+        }
+
         public copyFrom( v: Vector2 ): void {
             this._x = v._x;
             this._y = v._y;
@@ -68,6 +73,34 @@ namespace TSE {
             if ( json.y !== undefined ) {
                 this._y = Number( json.y );
             }
+        }
+
+        public add( v: Vector2 ): Vector2 {
+            this._x += v._x;
+            this._y += v._y;
+
+            return this;
+        }
+
+        public subtract( v: Vector2 ): Vector2 {
+            this._x -= v._x;
+            this._y -= v._y;
+
+            return this;
+        }
+
+        public multiply( v: Vector2 ): Vector2 {
+            this._x *= v._x;
+            this._y *= v._y;
+
+            return this;
+        }
+
+        public divide( v: Vector2 ): Vector2 {
+            this._x /= v._x;
+            this._y /= v._y;
+
+            return this;
         }
     }
 }

@@ -58,6 +58,33 @@ namespace TSE {
             return new Vector3( 1, 1, 1 );
         }
 
+        public static distance( a: Vector3, b: Vector3 ): number {
+            let diff = a.subtract( b );
+            return Math.sqrt( diff.x * diff.x + diff.y * diff.y + diff.z * diff.z );
+        }
+
+        public set( x?: number, y?: number, z?: number ): void {
+            if ( x !== undefined ) {
+                this._x = x;
+            }
+
+            if ( y !== undefined ) {
+                this._y = y;
+            }
+
+            if ( z !== undefined ) {
+                this._z = z;
+            }
+        }
+
+        /**
+         * Check if this vector is equal to the one passed in.
+         * @param v The vector to check against.
+         */
+        public equals( v: Vector3 ): boolean {
+            return ( this.x === v.x && this.y === v.y && this.z === v.z );
+        }
+
         /** Returns the data of this vector as a number array. */
         public toArray(): number[] {
             return [this._x, this._y, this._z];

@@ -115,6 +115,7 @@
     <TypeScriptCompile Include="core\behaviors\rotationBehavior.ts" />
     <TypeScriptCompile Include="core\components\animatedSpriteComponent.ts" />
     <TypeScriptCompile Include="core\components\baseComponent.ts" />
+    <TypeScriptCompile Include="core\components\collisionComponent.ts" />
     <TypeScriptCompile Include="core\components\componentManager.ts" />
     <TypeScriptCompile Include="core\components\IComponent.ts" />
     <TypeScriptCompile Include="core\components\IComponentBuilder.ts" />
@@ -129,6 +130,9 @@
     <TypeScriptCompile Include="core\graphics\color.ts" />
     <TypeScriptCompile Include="core\graphics\material.ts" />
     <TypeScriptCompile Include="core\graphics\materialManager.ts" />
+    <TypeScriptCompile Include="core\graphics\shapes2D\circle2D.ts" />
+    <TypeScriptCompile Include="core\graphics\shapes2D\IShape2D.ts" />
+    <TypeScriptCompile Include="core\graphics\shapes2D\rectangle2d.ts" />
     <TypeScriptCompile Include="core\graphics\sprite.ts" />
     <TypeScriptCompile Include="core\graphics\texture.ts" />
     <TypeScriptCompile Include="core\graphics\textureManager.ts" />
