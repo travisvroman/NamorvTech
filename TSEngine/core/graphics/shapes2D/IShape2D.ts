@@ -4,7 +4,9 @@
 
         position: Vector2;
 
-        offset: Vector2;
+        origin: Vector2;
+
+        readonly offset: Vector2;
 
         setFromJson( json: any ): void;
 

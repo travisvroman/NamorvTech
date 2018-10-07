@@ -4,17 +4,21 @@
 
         public position: Vector2 = Vector2.zero;
 
-        public offset: Vector2 = Vector2.zero;
+        public origin: Vector2 = Vector2.zero;
 
         public radius: number;
+
+        public get offset(): Vector2 {
+            return new Vector2( this.radius + ( this.radius * this.origin.x ), this.radius + ( this.radius * this.origin.y ) );
+        }
 
         public setFromJson( json: any ): void {
             if ( json.position !== undefined ) {
                 this.position.setFromJson( json.position );
             }
 
-            if ( json.offset !== undefined ) {
-                this.offset.setFromJson( json.offset );
+            if ( json.origin !== undefined ) {
+                this.origin.setFromJson( json.origin );
             }
 
             if ( json.radius === undefined ) {
@@ -34,10 +38,9 @@
             }
 
             if ( other instanceof Rectangle2D ) {
-                if ( this.pointInShape( other.position ) ||
-                    this.pointInShape( new Vector2( other.position.x + other.width, other.position.y ) ) ||
-                    this.pointInShape( new Vector2( other.position.x + other.width, other.position.y + other.height ) ) ||
-                    this.pointInShape( new Vector2( other.position.x, other.position.y + other.height ) ) ) {
+                let deltaX = this.position.x - Math.max( other.position.x, Math.min( this.position.x, other.position.x + other.width ) );
+                let deltaY = this.position.y - Math.max( other.position.y, Math.min( this.position.y, other.position.y + other.height ) );
+                if ( ( deltaX * deltaX + deltaY * deltaY ) < ( this.radius * this.radius ) ) {
                     return true;
                 }
             }
