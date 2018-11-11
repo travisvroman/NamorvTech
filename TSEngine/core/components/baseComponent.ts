@@ -23,16 +23,15 @@
         }
 
         public load(): void {
+        }
 
+        public updateReady(): void {
         }
 
         public update( time: number ): void {
-
         }
 
-
         public render( shader: Shader ): void {
-
         }
     }
 }

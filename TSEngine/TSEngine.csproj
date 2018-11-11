@@ -112,6 +112,7 @@
     <TypeScriptCompile Include="core\behaviors\IBehaviorBuilder.ts" />
     <TypeScriptCompile Include="core\behaviors\IBehaviorData.ts" />
     <TypeScriptCompile Include="core\behaviors\keyboardMovementBehavior.ts" />
+    <TypeScriptCompile Include="core\behaviors\playerBehavior.ts" />
     <TypeScriptCompile Include="core\behaviors\rotationBehavior.ts" />
     <TypeScriptCompile Include="core\collision\collisionManager.ts" />
     <TypeScriptCompile Include="core\components\animatedSpriteComponent.ts" />
@@ -139,6 +140,7 @@
     <TypeScriptCompile Include="core\graphics\textureManager.ts" />
     <TypeScriptCompile Include="core\graphics\vertex.ts" />
     <TypeScriptCompile Include="core\input\inputManager.ts" />
+    <TypeScriptCompile Include="core\math\mathExtensions.ts" />
     <TypeScriptCompile Include="core\math\matrix4x4.ts" />
     <TypeScriptCompile Include="core\math\transform.ts" />
     <TypeScriptCompile Include="core\math\vector2.ts" />

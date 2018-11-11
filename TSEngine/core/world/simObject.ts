@@ -55,6 +55,40 @@
             }
         }
 
+        public getComponentByName( name: string ): IComponent {
+            for ( let component of this._components ) {
+                if ( component.name === name ) {
+                    return component;
+                }
+            }
+
+            for ( let child of this._children ) {
+                let component = child.getComponentByName( name );
+                if ( component !== undefined ) {
+                    return component;
+                }
+            }
+
+            return undefined;
+        }
+
+        public getBehaviorByName( name: string ): IBehavior {
+            for ( let behavior of this._behaviors ) {
+                if ( behavior.name === name ) {
+                    return behavior;
+                }
+            }
+
+            for ( let child of this._children ) {
+                let behavior = child.getBehaviorByName( name );
+                if ( behavior !== undefined ) {
+                    return behavior;
+                }
+            }
+
+            return undefined;
+        }
+
         public getObjectByName( name: string ): SimObject {
             if ( this.name === name ) {
                 return this;
@@ -89,6 +123,20 @@
 
             for ( let c of this._children ) {
                 c.load();
+            }
+        }
+
+        public updateReady(): void {
+            for ( let c of this._components ) {
+                c.updateReady();
+            }
+
+            for ( let b of this._behaviors ) {
+                b.updateReady();
+            }
+
+            for ( let c of this._children ) {
+                c.updateReady();
             }
         }
 

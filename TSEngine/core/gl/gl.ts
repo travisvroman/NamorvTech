@@ -28,8 +28,11 @@
             }
 
             gl = canvas.getContext( "webgl" );
-            if ( gl === undefined ) {
-                throw new Error( "Unable to initialize WebGL!" );
+            if ( gl === undefined || gl === null ) {
+                gl = canvas.getContext( "experimental-webgl" );
+                if ( gl === undefined || gl === null ) {
+                    throw new Error( "Unable to initialize WebGL!" );
+                }
             }
 
             return canvas;

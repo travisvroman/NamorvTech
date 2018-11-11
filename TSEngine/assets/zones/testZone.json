@@ -7,12 +7,12 @@
 			"name": "duck",
 			"transform": {
 				"position": {
-					"x": 100,
+					"x": 33,
 					"y": 100
 				},
 				"scale": {
-					"x": 8,
-					"y": 8
+					"x": 2,
+					"y": 2
 				}
 			},
 			"components": [
@@ -34,7 +34,7 @@
 					"type": "collision",
 					"shape": {
 						"type": "circle",
-						"radius": 68
+						"radius": 8.5
 					}
 				}
 			],
@@ -43,34 +43,43 @@
 					"name": "movementBehavior",
 					"type": "keyboardMovement",
 					"speed": 2.5
+				},
+				{
+					"name": "playerController",
+					"type": "player",
+					"animatedSpriteName": "duckAnimatedSprite",
+					"playerCollisionComponent": "duckCollision",
+					"groundCollisionComponent": "groundCollision"
 				}
 			]
 		},
 		{
-			"name": "testCrate",
+			"name": "ground",
 			"transform": {
 				"position": {
-					"x": 300,
-					"y": 300
+					"x": 0,
+					"y": 458
+				},
+				"scale": {
+					"x": 1,
+					"y": 1
 				}
 			},
 			"components": [
 				{
-					"name": "test",
+					"name": "grass",
 					"type": "sprite",
-					"materialName": "crate",
-					"origin": {
-						"x": 0.5,
-						"y": 0.5
-					}
+					"materialName": "grass",
+					"width": 330,
+					"height": 22
 				},
 				{
-					"name": "testCrateCollision",
+					"name": "groundCollision",
 					"type": "collision",
 					"shape": {
 						"type": "rectangle",
-						"width": 100,
-						"height": 100
+						"width": 330,
+						"height": 22
 					}
 				}
 			],

@@ -31,6 +31,7 @@ namespace TSE {
         private _assetLoaded: boolean = false;
         private _assetWidth: number = 2;
         private _assetHeight: number = 2;
+        private _isPlaying: boolean = true;
 
         /**
          * Creates a new sprite.
@@ -50,9 +51,31 @@ namespace TSE {
             Message.subscribe( MESSAGE_ASSET_LOADER_ASSET_LOADED + this._material.diffuseTextureName, this );
         }
 
+        /**
+         * Indicates if this animated sprite is currently playing.
+         */
+        public get isPlaying(): boolean {
+            return this._isPlaying;
+        }
 
         public destroy(): void {
             super.destroy();
+        }
+
+        public play(): void {
+            this._isPlaying = true;
+        }
+
+        public stop(): void {
+            this._isPlaying = false;
+        }
+
+        public setFrame( frameNumber: number ): void {
+            if ( frameNumber >= this._frameCount ) {
+                throw new Error( "Frame is out of range:" + frameNumber + ", frame count:" + this._frameCount );
+            }
+
+            this._currentFrame = frameNumber;
         }
 
         /**
@@ -76,6 +99,9 @@ namespace TSE {
         public load(): void {
             super.load();
 
+            if ( !this._assetLoaded ) {
+                this.setupFromMaterial();
+            }
         }
 
         /**
@@ -84,6 +110,13 @@ namespace TSE {
          */
         public update( time: number ): void {
             if ( !this._assetLoaded ) {
+                if ( !this._assetLoaded ) {
+                    this.setupFromMaterial();
+                }
+                return;
+            }
+
+            if ( !this._isPlaying ) {
                 return;
             }
 
@@ -139,6 +172,20 @@ namespace TSE {
                 let max: Vector2 = new Vector2( uMax, vMax );
 
                 this._frameUVs.push( new UVInfo( min, max ) );
+            }
+        }
+
+        private setupFromMaterial(): void {
+            if ( !this._assetLoaded ) {
+                let material = MaterialManager.getMaterial( this._materialName );
+                if ( material.diffuseTexture.isLoaded ) {
+                    if ( AssetManager.isAssetLoaded( material.diffuseTextureName ) ) {
+                        this._assetHeight = material.diffuseTexture.height;
+                        this._assetWidth = material.diffuseTexture.width;
+                        this._assetLoaded = true;
+                        this.calculateUVs();
+                    }
+                }
             }
         }
     }

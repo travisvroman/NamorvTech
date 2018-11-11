@@ -1,6 +1,6 @@
 ﻿namespace TSE {
 
-    class CollisionData {
+    export class CollisionData {
         public a: CollisionComponent;
         public b: CollisionComponent;
         public time: number;
@@ -75,6 +75,8 @@
                             let col = new CollisionData( CollisionManager._totalTime, comp, other );
                             comp.onCollisionEntry( other );
                             other.onCollisionEntry( comp );
+                            Message.sendPriority( "COLLISION_ENTRY:" + comp.name, this, col );
+                            Message.sendPriority( "COLLISION_ENTRY:" + other.name, this, col );
                             this._collisionData.push( col );
                         }
                     }
@@ -97,13 +99,12 @@
                 let data = removeData.shift();
                 let index = CollisionManager._collisionData.indexOf( data );
                 CollisionManager._collisionData.splice( index, 1 );
-                
+
                 data.a.onCollisionExit( data.b );
                 data.b.onCollisionExit( data.a );
+                Message.sendPriority( "COLLISION_EXIT:" + data.a.name, this, data );
+                Message.sendPriority( "COLLISION_EXIT:" + data.b.name, this, data );
             }
-
-            // TODO: REMOVE ME
-            document.title = CollisionManager._collisionData.length.toString();
         }
     }
 }

@@ -72,7 +72,7 @@
 
             gl.shaderSource( shader, source );
             gl.compileShader( shader );
-            let error = gl.getShaderInfoLog( shader );
+            let error = gl.getShaderInfoLog( shader ).trim();
             if ( error !== "" ) {
                 throw new Error( "Error compiling shader '" + this._name + "': " + error );
             }
@@ -88,7 +88,7 @@
 
             gl.linkProgram( this._program );
 
-            let error = gl.getProgramInfoLog( this._program );
+            let error = gl.getProgramInfoLog( this._program ).trim();
             if ( error !== "" ) {
                 throw new Error( "Error linking shader '" + this._name + "': " + error );
             }
