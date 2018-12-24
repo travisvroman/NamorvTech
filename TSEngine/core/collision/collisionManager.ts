@@ -51,6 +51,11 @@
                         continue;
                     }
 
+                    // If both shapes are static, stop detection.
+                    if ( comp.isStatic && other.isStatic ) {
+                        continue;
+                    }
+
                     if ( comp.shape.intersects( other.shape ) ) {
 
                         // We have a collision!

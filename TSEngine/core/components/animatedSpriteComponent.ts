@@ -73,7 +73,7 @@ namespace TSE {
             }
         }
 
-        public isPlaying(): boolean {
+        public get isPlaying(): boolean {
             return this._sprite.isPlaying;
         }
 

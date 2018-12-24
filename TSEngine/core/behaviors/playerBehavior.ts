@@ -62,8 +62,13 @@ namespace TSE {
         private _playerCollisionComponent: string;
         private _groundCollisionComponent: string;
         private _animatedSpriteName: string;
+        private _isPlaying: boolean = false;
+        private _initialPosition: Vector3 = Vector3.zero;
 
         private _sprite: AnimatedSpriteComponent;
+
+        // TODO: move this to configuration.
+        private _pipeNames: string[] = ["pipe1Collision_end", "pipe1Collision_middle_top", "pipe1Collision_endneg", "pipe1Collision_middle_bottom"];
 
         public constructor( data: PlayerBehaviorData ) {
             super( data );
@@ -75,6 +80,9 @@ namespace TSE {
 
             Message.subscribe( "MOUSE_DOWN", this );
             Message.subscribe( "COLLISION_ENTRY:" + this._playerCollisionComponent, this );
+
+            Message.subscribe( "GAME_RESET", this );
+            Message.subscribe( "GAME_START", this );
         }
 
         public updateReady(): void {
@@ -86,15 +94,20 @@ namespace TSE {
                 throw new Error( "AnimatedSpriteComponent named '" + this._animatedSpriteName +
                     "' is not attached to the owner of this component." );
             }
+
+            // Make sure the animation plays right away.
+            this._sprite.setFrame( 0 );
+
+            this._initialPosition.copyFrom( this._owner.transform.position );
         }
 
         public update( time: number ): void {
-            if ( !this._isAlive ) {
-                return;
-            }
 
             let seconds: number = time / 1000;
-            this._velocity.add( this._acceleration.clone().scale( seconds ) );
+
+            if ( this._isPlaying ) {
+                this._velocity.add( this._acceleration.clone().scale( seconds ) );
+            }
 
             // Limit max speed
             if ( this._velocity.y > 400 ) {
@@ -126,7 +139,7 @@ namespace TSE {
             if ( this.shouldNotFlap() ) {
                 this._sprite.stop();
             } else {
-                if ( !this._sprite.isPlaying() ) {
+                if ( !this._sprite.isPlaying ) {
                     this._sprite.play();
                 }
             }
@@ -144,8 +157,17 @@ namespace TSE {
                     if ( data.a.name === this._groundCollisionComponent || data.b.name === this._groundCollisionComponent ) {
                         this.die();
                         this.decelerate();
-                        Message.send( "PLAYER_DIED", this );
                     }
+
+                    if ( this._pipeNames.indexOf( data.a.name ) !== -1 || this._pipeNames.indexOf( data.b.name ) !== -1 ) {
+                        this.die();
+                    }
+                    break;
+                case "GAME_RESET":
+                    this.reset();
+                    break;
+                case "GAME_START":
+                    this.start();
                     break;
             }
         }
@@ -155,12 +177,31 @@ namespace TSE {
         }
 
         private shouldNotFlap(): boolean {
-            return this._velocity.y > 220.0 || !this._isAlive;
+            return this._isPlaying || this._velocity.y > 220.0 || !this._isAlive;
         }
 
         private die(): void {
-            this._isAlive = false;
-            AudioManager.playSound( "dead" );
+            if ( this._isAlive ) {
+                this._isAlive = false;
+                AudioManager.playSound( "dead" );
+                Message.send( "PLAYER_DIED", this );
+            }
+        }
+
+        private reset(): void {
+            this._isAlive = true;
+            this._isPlaying = false;
+            this._sprite.owner.transform.position.copyFrom( this._initialPosition );
+            this._sprite.owner.transform.rotation.z = 0;
+
+            this._velocity.set( 0, 0 );
+            this._acceleration.set( 0, 920 );
+            this._sprite.play();
+        }
+
+        private start(): void {
+            this._isPlaying = true;
+            Message.send( "PLAYER_RESET", this );
         }
 
         private decelerate(): void {
@@ -169,7 +210,7 @@ namespace TSE {
         }
 
         private onFlap(): void {
-            if ( this._isAlive ) {
+            if ( this._isAlive && this._isPlaying ) {
                 this._velocity.y = -280;
                 AudioManager.playSound( "flap" );
             }

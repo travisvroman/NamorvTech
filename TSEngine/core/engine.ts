@@ -46,6 +46,9 @@
             this._basicShader.use();
 
             // Load materials
+            MaterialManager.registerMaterial( new Material( "bg", "assets/textures/bg.png", Color.white() ) );
+            MaterialManager.registerMaterial( new Material( "end", "assets/textures/end.png", Color.white() ) );
+            MaterialManager.registerMaterial( new Material( "middle", "assets/textures/middle.png", Color.white() ) );
             MaterialManager.registerMaterial( new Material( "grass", "assets/textures/grass.png", Color.white() ) );
             MaterialManager.registerMaterial( new Material( "duck", "assets/textures/duck.png", Color.white() ) );
 

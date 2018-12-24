@@ -4,14 +4,14 @@
 
         public position: Vector2 = Vector2.zero;
 
-        public origin: Vector2 = new Vector2( 0.5, 0.5 );
+        public origin: Vector2 = Vector2.zero;
 
         public width: number;
 
         public height: number;
 
         public get offset(): Vector2 {
-            return new Vector2( -( this.width * this.origin.x ), -( this.height * this.origin.y ) );
+            return new Vector2( ( this.width * this.origin.x ), ( this.height * this.origin.y ) );
         }
 
         public setFromJson( json: any ): void {
@@ -37,12 +37,10 @@
         public intersects( other: IShape2D ): boolean {
             if ( other instanceof Rectangle2D ) {
 
-                if ( this.pointInShape( other.position ) ||
+                return ( this.pointInShape( other.position ) ||
                     this.pointInShape( new Vector2( other.position.x + other.width, other.position.y ) ) ||
                     this.pointInShape( new Vector2( other.position.x + other.width, other.position.y + other.height ) ) ||
-                    this.pointInShape( new Vector2( other.position.x, other.position.y + other.height ) ) ) {
-                    return true;
-                }
+                    this.pointInShape( new Vector2( other.position.x, other.position.y + other.height ) ) );
             }
 
             if ( other instanceof Circle2D ) {
@@ -57,10 +55,15 @@
         }
 
         public pointInShape( point: Vector2 ): boolean {
-            if ( point.x >= this.position.x && point.x <= this.position.x + this.width ) {
-                if ( point.y >= this.position.y && point.y <= this.position.y + this.height ) {
-                    return true;
-                }
+
+            let x = this.width < 0 ? this.position.x - this.width : this.position.x;
+            let y = this.height < 0 ? this.position.y - this.height : this.position.y;
+
+            let extentX = this.width < 0 ? this.position.x : this.position.x + this.width;
+            let extentY = this.height < 0 ? this.position.y : this.position.y + this.height;
+
+            if ( point.x >= x && point.x <= extentX && point.y >= y && point.y <= extentY ) {
+                return true;
             }
 
             return false;
