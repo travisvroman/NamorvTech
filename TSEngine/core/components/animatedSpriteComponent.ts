@@ -11,36 +11,41 @@ namespace TSE {
         public frameCount: number;
         public frameSequence: number[] = [];
         public autoPlay: boolean = true;
+        public frameTime: number = 33;
 
-        public setFromJson( json: any ): void {
-            super.setFromJson( json );
+        public setFromJson(json: any): void {
+            super.setFromJson(json);
 
-            if ( json.autoPlay !== undefined ) {
-                this.autoPlay = Boolean( json.autoPlay );
+            if (json.autoPlay !== undefined) {
+                this.autoPlay = Boolean(json.autoPlay);
             }
 
-            if ( json.frameWidth === undefined ) {
-                throw new Error( "AnimatedSpriteComponentData requires 'frameWidth' to be defined." );
+            if (json.frameWidth === undefined) {
+                throw new Error("AnimatedSpriteComponentData requires 'frameWidth' to be defined.");
             } else {
-                this.frameWidth = Number( json.frameWidth );
+                this.frameWidth = Number(json.frameWidth);
             }
 
-            if ( json.frameHeight === undefined ) {
-                throw new Error( "AnimatedSpriteComponentData requires 'frameHeight' to be defined." );
+            if (json.frameHeight === undefined) {
+                throw new Error("AnimatedSpriteComponentData requires 'frameHeight' to be defined.");
             } else {
-                this.frameHeight = Number( json.frameHeight );
+                this.frameHeight = Number(json.frameHeight);
             }
 
-            if ( json.frameCount === undefined ) {
-                throw new Error( "AnimatedSpriteComponentData requires 'frameCount' to be defined." );
+            if (json.frameCount === undefined) {
+                throw new Error("AnimatedSpriteComponentData requires 'frameCount' to be defined.");
             } else {
-                this.frameCount = Number( json.frameCount );
+                this.frameCount = Number(json.frameCount);
             }
 
-            if ( json.frameSequence === undefined ) {
-                throw new Error( "AnimatedSpriteComponentData requires 'frameSequence' to be defined." );
+            if (json.frameSequence === undefined) {
+                throw new Error("AnimatedSpriteComponentData requires 'frameSequence' to be defined.");
             } else {
                 this.frameSequence = json.frameSequence;
+            }
+
+            if (json.frameTime !== undefined) {
+                this.frameTime = Number(json.frameTime);
             }
         }
     }
@@ -51,10 +56,10 @@ namespace TSE {
             return "animatedSprite";
         }
 
-        public buildFromJson( json: any ): IComponent {
+        public buildFromJson(json: any): IComponent {
             let data = new AnimatedSpriteComponentData();
-            data.setFromJson( json );
-            return new AnimatedSpriteComponent( data );
+            data.setFromJson(json);
+            return new AnimatedSpriteComponent(data);
         }
     }
 
@@ -63,13 +68,24 @@ namespace TSE {
         private _autoPlay: boolean;
         private _sprite: AnimatedSprite;
 
-        public constructor( data: AnimatedSpriteComponentData ) {
-            super( data );
+        public constructor(data: AnimatedSpriteComponentData) {
+            super(data);
 
             this._autoPlay = data.autoPlay;
-            this._sprite = new AnimatedSprite( name, data.materialName, data.frameWidth, data.frameHeight, data.frameWidth, data.frameHeight, data.frameCount, data.frameSequence );
-            if ( !data.origin.equals( Vector3.zero ) ) {
-                this._sprite.origin.copyFrom( data.origin );
+            let spriteInfo = new AnimatedSpriteInfo();
+            spriteInfo.name = name;
+            spriteInfo.materialName = data.materialName;
+            spriteInfo.frameWidth = data.frameWidth;
+            spriteInfo.frameHeight = data.frameHeight;
+            spriteInfo.width = data.frameWidth;
+            spriteInfo.height = data.frameHeight;
+            spriteInfo.frameCount = data.frameCount
+            spriteInfo.frameSequence = data.frameSequence;
+            spriteInfo.frameTime = data.frameTime;
+
+            this._sprite = new AnimatedSprite(spriteInfo);
+            if (!data.origin.equals(Vector3.zero)) {
+                this._sprite.origin.copyFrom(data.origin);
             }
         }
 
@@ -82,21 +98,21 @@ namespace TSE {
         }
 
         public updateReady(): void {
-            if ( !this._autoPlay ) {
+            if (!this._autoPlay) {
                 this._sprite.stop();
             }
         }
 
-        public update( time: number ): void {
-            this._sprite.update( time );
+        public update(time: number): void {
+            this._sprite.update(time);
 
-            super.update( time );
+            super.update(time);
         }
 
-        public render( shader: Shader ): void {
-            this._sprite.draw( shader, this.owner.worldMatrix );
+        public render(shader: Shader): void {
+            this._sprite.draw(shader, this.owner.worldMatrix);
 
-            super.render( shader );
+            super.render(shader);
         }
 
         public play(): void {
@@ -107,10 +123,10 @@ namespace TSE {
             this._sprite.stop();
         }
 
-        public setFrame( frameNumber: number ): void {
-            this._sprite.setFrame( frameNumber );
+        public setFrame(frameNumber: number): void {
+            this._sprite.setFrame(frameNumber);
         }
     }
 
-    ComponentManager.registerBuilder( new AnimatedSpriteComponentBuilder() );
+    ComponentManager.registerBuilder(new AnimatedSpriteComponentBuilder());
 }

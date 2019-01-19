@@ -11,6 +11,7 @@
         private _previousTime: number = 0;
         private _gameWidth: number;
         private _gameHeight: number;
+        private _isFirstUpdate: boolean = true;
 
         /**
          * Creates a new engine.
@@ -56,6 +57,13 @@
             MaterialManager.registerMaterial(new Material("grass", "assets/textures/grass.png", Color.white()));
             MaterialManager.registerMaterial(new Material("duck", "assets/textures/duck.png", Color.white()));
 
+            MaterialManager.registerMaterial(new Material("playbtn", "assets/textures/playbtn.png", Color.white()));
+            MaterialManager.registerMaterial(new Material("restartbtn", "assets/textures/restartbtn.png", Color.white()));
+            MaterialManager.registerMaterial(new Material("score", "assets/textures/score.png", Color.white()));
+            MaterialManager.registerMaterial(new Material("title", "assets/textures/title.png", Color.white()));
+            MaterialManager.registerMaterial(new Material("tutorial", "assets/textures/tutorial.png", Color.white()));
+
+
             AudioManager.loadSoundFile("flap", "assets/sounds/flap.mp3", false);
             AudioManager.loadSoundFile("ting", "assets/sounds/ting.mp3", false);
             AudioManager.loadSoundFile("dead", "assets/sounds/dead.mp3", false);
@@ -92,10 +100,15 @@
         }
 
         private loop(): void {
+            if (this._isFirstUpdate) {
+
+            }
+
             this.update();
             this.render();
 
             requestAnimationFrame(this.loop.bind(this));
+
         }
 
         private preloading(): void {

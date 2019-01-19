@@ -5,38 +5,38 @@ namespace TSE {
 
     export class PlayerBehaviorData implements IBehaviorData {
         public name: string;
-        public acceleration: Vector2 = new Vector2( 0, 920 );
+        public acceleration: Vector2 = new Vector2(0, 920);
         public playerCollisionComponent: string;
         public groundCollisionComponent: string;
         public animatedSpriteName: string;
 
-        public setFromJson( json: any ): void {
-            if ( json.name === undefined ) {
-                throw new Error( "Name must be defined in behavior data." );
+        public setFromJson(json: any): void {
+            if (json.name === undefined) {
+                throw new Error("Name must be defined in behavior data.");
             }
 
-            this.name = String( json.name );
+            this.name = String(json.name);
 
-            if ( json.acceleration !== undefined ) {
-                this.acceleration.setFromJson( json.acceleration );
+            if (json.acceleration !== undefined) {
+                this.acceleration.setFromJson(json.acceleration);
             }
 
-            if ( json.animatedSpriteName === undefined ) {
-                throw new Error( "animatedSpriteName must be defined in behavior data." );
+            if (json.animatedSpriteName === undefined) {
+                throw new Error("animatedSpriteName must be defined in behavior data.");
             } else {
-                this.animatedSpriteName = String( json.animatedSpriteName );
+                this.animatedSpriteName = String(json.animatedSpriteName);
             }
 
-            if ( json.playerCollisionComponent === undefined ) {
-                throw new Error( "playerCollisionComponent must be defined in behavior data." );
+            if (json.playerCollisionComponent === undefined) {
+                throw new Error("playerCollisionComponent must be defined in behavior data.");
             } else {
-                this.playerCollisionComponent = String( json.playerCollisionComponent );
+                this.playerCollisionComponent = String(json.playerCollisionComponent);
             }
 
-            if ( json.groundCollisionComponent === undefined ) {
-                throw new Error( "groundCollisionComponent must be defined in behavior data." );
+            if (json.groundCollisionComponent === undefined) {
+                throw new Error("groundCollisionComponent must be defined in behavior data.");
             } else {
-                this.groundCollisionComponent = String( json.groundCollisionComponent );
+                this.groundCollisionComponent = String(json.groundCollisionComponent);
             }
         }
     }
@@ -46,10 +46,10 @@ namespace TSE {
             return "player";
         }
 
-        public buildFromJson( json: any ): IBehavior {
+        public buildFromJson(json: any): IBehavior {
             let data = new PlayerBehaviorData();
-            data.setFromJson( json );
-            return new PlayerBehavior( data );
+            data.setFromJson(json);
+            return new PlayerBehavior(data);
         }
     }
 
@@ -70,104 +70,132 @@ namespace TSE {
         // TODO: move this to configuration.
         private _pipeNames: string[] = ["pipe1Collision_end", "pipe1Collision_middle_top", "pipe1Collision_endneg", "pipe1Collision_middle_bottom"];
 
-        public constructor( data: PlayerBehaviorData ) {
-            super( data );
+        public constructor(data: PlayerBehaviorData) {
+            super(data);
 
             this._acceleration = data.acceleration;
             this._playerCollisionComponent = data.playerCollisionComponent;
             this._groundCollisionComponent = data.groundCollisionComponent;
             this._animatedSpriteName = data.animatedSpriteName;
 
-            Message.subscribe( "MOUSE_DOWN", this );
-            Message.subscribe( "COLLISION_ENTRY:" + this._playerCollisionComponent, this );
+            Message.subscribe("MOUSE_DOWN", this);
+            Message.subscribe("COLLISION_ENTRY:" + this._playerCollisionComponent, this);
 
-            Message.subscribe( "GAME_RESET", this );
-            Message.subscribe( "GAME_START", this );
+            Message.subscribe("GAME_READY", this);
+            Message.subscribe("GAME_RESET", this);
+            Message.subscribe("GAME_START", this);
+
+            Message.subscribe("PLAYER_DIED", this);
         }
 
         public updateReady(): void {
             super.updateReady();
 
             // Obtain a reference to the animated sprite.
-            this._sprite = this._owner.getComponentByName( this._animatedSpriteName ) as AnimatedSpriteComponent;
-            if ( this._sprite === undefined ) {
-                throw new Error( "AnimatedSpriteComponent named '" + this._animatedSpriteName +
-                    "' is not attached to the owner of this component." );
+            this._sprite = this._owner.getComponentByName(this._animatedSpriteName) as AnimatedSpriteComponent;
+            if (this._sprite === undefined) {
+                throw new Error("AnimatedSpriteComponent named '" + this._animatedSpriteName +
+                    "' is not attached to the owner of this component.");
             }
 
             // Make sure the animation plays right away.
-            this._sprite.setFrame( 0 );
+            this._sprite.setFrame(0);
 
-            this._initialPosition.copyFrom( this._owner.transform.position );
+            this._initialPosition.copyFrom(this._owner.transform.position);
         }
 
-        public update( time: number ): void {
+        public update(time: number): void {
 
             let seconds: number = time / 1000;
 
-            if ( this._isPlaying ) {
-                this._velocity.add( this._acceleration.clone().scale( seconds ) );
+            if (this._isPlaying) {
+                this._velocity.add(this._acceleration.clone().scale(seconds));
             }
 
             // Limit max speed
-            if ( this._velocity.y > 400 ) {
+            if (this._velocity.y > 400) {
                 this._velocity.y = 400;
             }
 
             // Prevent flying too high.
-            if ( this._owner.transform.position.y < -13 ) {
+            if (this._owner.transform.position.y < -13) {
                 this._owner.transform.position.y = -13;
                 this._velocity.y = 0;
             }
 
-            this._owner.transform.position.add( this._velocity.clone().scale( seconds ).toVector3() );
+            this._owner.transform.position.add(this._velocity.clone().scale(seconds).toVector3());
 
-            if ( this._velocity.y < 0 ) {
-                this._owner.transform.rotation.z -= Math.degToRad( 600.0 ) * seconds;
-                if ( this._owner.transform.rotation.z < Math.degToRad( -20 ) ) {
-                    this._owner.transform.rotation.z = Math.degToRad( -20 );
+            if (this._velocity.y < 0) {
+                this._owner.transform.rotation.z -= Math.degToRad(600.0) * seconds;
+                if (this._owner.transform.rotation.z < Math.degToRad(-20)) {
+                    this._owner.transform.rotation.z = Math.degToRad(-20);
                 }
             }
 
-            if ( this.isFalling() || !this._isAlive ) {
-                this._owner.transform.rotation.z += Math.degToRad( 480.0 ) * seconds;
-                if ( this._owner.transform.rotation.z > Math.degToRad( 90 ) ) {
-                    this._owner.transform.rotation.z = Math.degToRad( 90 );
+            if (this.isFalling() || !this._isAlive) {
+                this._owner.transform.rotation.z += Math.degToRad(480.0) * seconds;
+                if (this._owner.transform.rotation.z > Math.degToRad(90)) {
+                    this._owner.transform.rotation.z = Math.degToRad(90);
                 }
             }
 
-            if ( this.shouldNotFlap() ) {
+            if (this.shouldNotFlap()) {
                 this._sprite.stop();
             } else {
-                if ( !this._sprite.isPlaying ) {
+                if (!this._sprite.isPlaying) {
                     this._sprite.play();
                 }
             }
 
-            super.update( time );
+            super.update(time);
         }
 
-        public onMessage( message: Message ): void {
-            switch ( message.code ) {
+        public onMessage(message: Message): void {
+            switch (message.code) {
                 case "MOUSE_DOWN":
                     this.onFlap();
                     break;
                 case "COLLISION_ENTRY:" + this._playerCollisionComponent:
                     let data: CollisionData = message.context as CollisionData;
-                    if ( data.a.name === this._groundCollisionComponent || data.b.name === this._groundCollisionComponent ) {
+                    if (data.a.name === this._groundCollisionComponent || data.b.name === this._groundCollisionComponent) {
                         this.die();
                         this.decelerate();
                     }
 
-                    if ( this._pipeNames.indexOf( data.a.name ) !== -1 || this._pipeNames.indexOf( data.b.name ) !== -1 ) {
+                    if (this._pipeNames.indexOf(data.a.name) !== -1 || this._pipeNames.indexOf(data.b.name) !== -1) {
                         this.die();
                     }
                     break;
+
+                // Shows the tutorial, click to GAME_START
                 case "GAME_RESET":
+                    Message.send("GAME_HIDE", this);
+                    Message.send("RESET_HIDE", this);
+                    Message.send("SPLASH_HIDE", this);
+                    Message.send("TUTORIAL_SHOW", this);
                     this.reset();
                     break;
+
+                // Starts the main game.
                 case "GAME_START":
+                    Message.send("GAME_SHOW", this);
+                    Message.send("RESET_HIDE", this);
+                    Message.send("SPLASH_HIDE", this);
+                    Message.send("TUTORIAL_HIDE", this);
                     this.start();
+                    break;
+
+                // Level is loaded, show tutorial
+                case "GAME_READY":
+                    Message.send("RESET_HIDE", this);
+                    Message.send("TUTORIAL_HIDE", this);
+                    Message.send("GAME_HIDE", this);
+                    Message.send("SPLASH_SHOW", this);
+                    break;
+
+                // Show score and restart button
+                case "PLAYER_DIED":
+                    Message.send("RESET_SHOW", this);
                     break;
             }
         }
@@ -181,27 +209,27 @@ namespace TSE {
         }
 
         private die(): void {
-            if ( this._isAlive ) {
+            if (this._isAlive) {
                 this._isAlive = false;
-                AudioManager.playSound( "dead" );
-                Message.send( "PLAYER_DIED", this );
+                AudioManager.playSound("dead");
+                Message.send("PLAYER_DIED", this);
             }
         }
 
         private reset(): void {
             this._isAlive = true;
             this._isPlaying = false;
-            this._sprite.owner.transform.position.copyFrom( this._initialPosition );
+            this._sprite.owner.transform.position.copyFrom(this._initialPosition);
             this._sprite.owner.transform.rotation.z = 0;
 
-            this._velocity.set( 0, 0 );
-            this._acceleration.set( 0, 920 );
+            this._velocity.set(0, 0);
+            this._acceleration.set(0, 920);
             this._sprite.play();
         }
 
         private start(): void {
             this._isPlaying = true;
-            Message.send( "PLAYER_RESET", this );
+            Message.send("PLAYER_RESET", this);
         }
 
         private decelerate(): void {
@@ -210,21 +238,21 @@ namespace TSE {
         }
 
         private onFlap(): void {
-            if ( this._isAlive && this._isPlaying ) {
+            if (this._isAlive && this._isPlaying) {
                 this._velocity.y = -280;
-                AudioManager.playSound( "flap" );
+                AudioManager.playSound("flap");
             }
         }
 
-        private onRestart( y: number ): void {
+        private onRestart(y: number): void {
             this._owner.transform.rotation.z = 0;
-            this._owner.transform.position.set( 33, y );
-            this._velocity.set( 0, 0 );
-            this._acceleration.set( 0, 920 );
+            this._owner.transform.position.set(33, y);
+            this._velocity.set(0, 0);
+            this._acceleration.set(0, 920);
             this._isAlive = true;
             this._sprite.play();
         }
     }
 
-    BehaviorManager.registerBuilder( new PlayerBehaviorBuilder() );
+    BehaviorManager.registerBuilder(new PlayerBehaviorBuilder());
 }
