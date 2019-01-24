@@ -42,3 +42,20 @@ https://www.youtube.com/playlist?list=PLv8Ddw9K0JPiTHLMQw31Yh4qyTAcHRnJx
 - WebGL2?
 - Input handler overhaul
 - Zone overhaul - potentially change to a better format
+
+# StupidDuck Post-Mortem
+## Positives
++  Very flexible due to object/component/behavior structure
++  Adding features can be done in a decoupled, contained way
++  Supports auto-resizing and multiple browsers, including mobile
++  Underlying support for 3d, even though largely unused.
+
+## Negatives
+-  Zone files *very* verbose
+-  No way to inherit configurations of objects/components/behaviours
+-  Stand-up of components/behaviours involves a lot of boilerplate logic
+-  Collision system is axis-aligned only and far from robust. Also only supports 2D
+-  Lots of uncommented code that needs to be cleaned up and commented.
+-  Very reliant on using Visual Studio. VS reliance should be removed in favour of a more flexible workflow (switch to VSCode and npm/http-server)
+-  Debugging via IIS Express can be buggy (see previous point)
+-  Game and Engine logic located in the same space. Should be separate projects and repos and packaged using npm.
