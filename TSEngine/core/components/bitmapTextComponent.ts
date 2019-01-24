@@ -37,7 +37,7 @@
         }
     }
 
-    export class BitmapTextComponent extends BaseComponent {
+    export class BitmapTextComponent extends BaseComponent implements IMessageHandler {
 
         private _bitmapText: BitmapText;
         private _fontName: string;
@@ -51,6 +51,9 @@
             }
 
             this._bitmapText.text = data.text;
+
+            // Listen for text updates.
+            Message.subscribe(this.name + ":SetText", this);
         }
 
         public load(): void {
@@ -64,6 +67,12 @@
         public render(shader: Shader): void {
             this._bitmapText.draw(shader, this.owner.worldMatrix);
             super.render(shader);
+        }
+
+        public onMessage(message: Message): void {
+            if (message.code === this.name + ":SetText") {
+                this._bitmapText.text = String(message.context);
+            }
         }
     }
 

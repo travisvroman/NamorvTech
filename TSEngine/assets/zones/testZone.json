@@ -49,6 +49,8 @@
 						"x": 550,
 						"y": 0
 					},
+					"minResetY": 15,
+					"maxResetY": 105,
 					"resetMessage": "GAME_RESET",
 					"stopMessage": "PLAYER_DIED",
 					"startMessage": "PLAYER_RESET"
@@ -125,7 +127,26 @@
 					"behaviors": [
 					]
 				},
-				
+				{
+					"name": "pipe1_score",
+					"transform": {
+						"position": {
+							"x": 34,
+							"y": 122
+						}						
+					},
+					"components": [
+						{
+							"name": "scoreCollision",
+							"type": "collision",
+							"shape": {
+								"type": "rectangle",
+								"width": 10,
+								"height": 128
+							}
+						}
+					]
+				},
 				{
 					"name": "pipe1_bottom",
 					"transform": {
@@ -212,6 +233,8 @@
 						"x": 550,
 						"y": 0
 					},
+					"minResetY": 15,
+					"maxResetY": 105,
 					"resetMessage": "GAME_RESET",
 					"stopMessage": "PLAYER_DIED",
 					"startMessage": "PLAYER_RESET"
@@ -288,7 +311,26 @@
 					"behaviors": [
 					]
 				},
-				
+				{
+					"name": "pipe1_score",
+					"transform": {
+						"position": {
+							"x": 34,
+							"y": 122
+						}						
+					},
+					"components": [
+						{
+							"name": "scoreCollision",
+							"type": "collision",
+							"shape": {
+								"type": "rectangle",
+								"width": 10,
+								"height": 128
+							}
+						}
+					]
+				},
 				{
 					"name": "pipe1_bottom",
 					"transform": {
@@ -375,6 +417,8 @@
 						"x": 550,
 						"y": 0
 					},
+					"minResetY": 15,
+					"maxResetY": 105,
 					"resetMessage": "GAME_RESET",
 					"stopMessage": "PLAYER_DIED",
 					"startMessage": "PLAYER_RESET"
@@ -451,7 +495,26 @@
 					"behaviors": [
 					]
 				},
-				
+				{
+					"name": "pipe1_score",
+					"transform": {
+						"position": {
+							"x": 34,
+							"y": 122
+						}						
+					},
+					"components": [
+						{
+							"name": "scoreCollision",
+							"type": "collision",
+							"shape": {
+								"type": "rectangle",
+								"width": 10,
+								"height": 128
+							}
+						}
+					]
+				},
 				{
 					"name": "pipe1_bottom",
 					"transform": {
@@ -656,7 +719,8 @@
 					"type": "player",
 					"animatedSpriteName": "duckAnimatedSprite",
 					"playerCollisionComponent": "duckCollision",
-					"groundCollisionComponent": "groundCollision"
+					"groundCollisionComponent": "groundCollision",
+					"scoreCollisionComponent": "scoreCollision"
 				},
 				{
 					"name": "showGameDuck",
@@ -764,6 +828,13 @@
 					"type": "visibilityOnMessage",
 					"messageCode": "SPLASH_HIDE",
 					"visible": false
+				},
+				{
+					"name": "playBtnClick",
+					"type": "mouseClick",
+					"width": 58,
+					"height": 32,
+					"messageCode": "GAME_RESET"
 				}
 			]
 		},
@@ -839,6 +910,13 @@
 					"type": "visibilityOnMessage",
 					"messageCode": "TUTORIAL_HIDE",
 					"visible": false
+				},
+				{
+					"name": "tutorialBtnClick",
+					"type": "mouseClick",
+					"width": 128,
+					"height": 64,
+					"messageCode": "GAME_START"
 				}
 			]
 		},
@@ -925,7 +1003,7 @@
 				{
 					"name": "bestText",
 					"type": "bitmapText",
-					"text": "36",
+					"text": "0",
 					"fontName": "default"
 				}
 			],
@@ -1008,6 +1086,13 @@
 					"type": "visibilityOnMessage",
 					"messageCode": "RESET_HIDE",
 					"visible": false
+				},
+				{
+					"name": "restartBtnClick",
+					"type": "mouseClick",
+					"width": 92,
+					"height": 20,
+					"messageCode": "GAME_RESET"
 				}
 			]
 		}
