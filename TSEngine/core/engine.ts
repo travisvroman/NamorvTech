@@ -12,6 +12,9 @@
         private _gameWidth: number;
         private _gameHeight: number;
 
+        private _isFirstUpdate: boolean = true;
+        private _aspect: number;
+
         /**
          * Creates a new engine.
          * @param width The width of the game in pixels.
@@ -25,17 +28,14 @@
         /**
          * Starts up this engine.
          * */
-        public start(): void {
+        public start(elementName?: string): void {
 
-            this._canvas = GLUtilities.initialize();
+            this._canvas = GLUtilities.initialize(elementName);
             if (this._gameWidth !== undefined && this._gameHeight !== undefined) {
-                this._canvas.style.width = this._gameWidth + "px";
-                this._canvas.style.height = this._gameHeight + "px";
-                this._canvas.width = this._gameWidth;
-                this._canvas.height = this._gameHeight;
+                this._aspect = this._gameWidth / this._gameHeight;
             }
             AssetManager.initialize();
-            InputManager.initialize();
+            InputManager.initialize(this._canvas);
             ZoneManager.initialize();
 
             gl.clearColor(146 / 255, 206 / 255, 247 / 255, 1);
@@ -55,6 +55,12 @@
             MaterialManager.registerMaterial(new Material("middle", "assets/textures/middle.png", Color.white()));
             MaterialManager.registerMaterial(new Material("grass", "assets/textures/grass.png", Color.white()));
             MaterialManager.registerMaterial(new Material("duck", "assets/textures/duck.png", Color.white()));
+
+            MaterialManager.registerMaterial(new Material("playbtn", "assets/textures/playbtn.png", Color.white()));
+            MaterialManager.registerMaterial(new Material("restartbtn", "assets/textures/restartbtn.png", Color.white()));
+            MaterialManager.registerMaterial(new Material("score", "assets/textures/score.png", Color.white()));
+            MaterialManager.registerMaterial(new Material("title", "assets/textures/title.png", Color.white()));
+            MaterialManager.registerMaterial(new Material("tutorial", "assets/textures/tutorial.png", Color.white()));
 
             AudioManager.loadSoundFile("flap", "assets/sounds/flap.mp3", false);
             AudioManager.loadSoundFile("ting", "assets/sounds/ting.mp3", false);
@@ -77,10 +83,36 @@
                 if (this._gameWidth === undefined || this._gameHeight === undefined) {
                     this._canvas.width = window.innerWidth;
                     this._canvas.height = window.innerHeight;
-                }
+                    gl.viewport(0, 0, window.innerWidth, window.innerHeight);
+                    this._projection = Matrix4x4.orthographic(0, window.innerWidth, window.innerHeight, 0, -100.0, 100.0);
+                } else {
+                    let newWidth = window.innerWidth;
+                    let newHeight = window.innerHeight;
+                    let newWidthToHeight = newWidth / newHeight;
+                    let gameArea = document.getElementById("gameArea");
 
-                gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-                this._projection = Matrix4x4.orthographic(0, this._canvas.width, this._canvas.height, 0, -100.0, 100.0);
+                    if (newWidthToHeight > this._aspect) {
+                        newWidth = newHeight * this._aspect;
+                        gameArea.style.height = newHeight + 'px';
+                        gameArea.style.width = newWidth + 'px';
+                    } else {
+                        newHeight = newWidth / this._aspect;
+                        gameArea.style.width = newWidth + 'px';
+                        gameArea.style.height = newHeight + 'px';
+                    }
+
+                    gameArea.style.marginTop = (-newHeight / 2) + 'px';
+                    gameArea.style.marginLeft = (-newWidth / 2) + 'px';
+
+                    this._canvas.width = newWidth;
+                    this._canvas.height = newHeight;
+
+                    gl.viewport(0, 0, newWidth, newHeight);
+                    this._projection = Matrix4x4.orthographic(0, this._gameWidth, this._gameHeight, 0, -100.0, 100.0);
+
+                    let resolutionScale = new Vector2(newWidth / this._gameWidth, newHeight / this._gameHeight);
+                    InputManager.setResolutionScale(resolutionScale);
+                }
             }
         }
 
@@ -92,6 +124,10 @@
         }
 
         private loop(): void {
+            if (this._isFirstUpdate) {
+
+            }
+
             this.update();
             this.render();
 

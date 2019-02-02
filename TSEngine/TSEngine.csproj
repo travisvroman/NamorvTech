@@ -113,9 +113,11 @@
     <TypeScriptCompile Include="core\behaviors\IBehaviorBuilder.ts" />
     <TypeScriptCompile Include="core\behaviors\IBehaviorData.ts" />
     <TypeScriptCompile Include="core\behaviors\keyboardMovementBehavior.ts" />
+    <TypeScriptCompile Include="core\behaviors\mouseClickBehavior.ts" />
     <TypeScriptCompile Include="core\behaviors\playerBehavior.ts" />
     <TypeScriptCompile Include="core\behaviors\rotationBehavior.ts" />
     <TypeScriptCompile Include="core\behaviors\scrollBehavior.ts" />
+    <TypeScriptCompile Include="core\behaviors\visibilityOnMessageBehavior.ts" />
     <TypeScriptCompile Include="core\collision\collisionManager.ts" />
     <TypeScriptCompile Include="core\components\animatedSpriteComponent.ts" />
     <TypeScriptCompile Include="core\components\baseComponent.ts" />

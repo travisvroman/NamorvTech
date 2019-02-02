@@ -5,7 +5,7 @@
         public b: CollisionComponent;
         public time: number;
 
-        public constructor( time: number, a: CollisionComponent, b: CollisionComponent ) {
+        public constructor(time: number, a: CollisionComponent, b: CollisionComponent) {
             this.time = time;
             this.a = a;
             this.b = b;
@@ -22,14 +22,14 @@
         private constructor() {
         }
 
-        public static registerCollisionComponent( component: CollisionComponent ): void {
-            CollisionManager._components.push( component );
+        public static registerCollisionComponent(component: CollisionComponent): void {
+            CollisionManager._components.push(component);
         }
 
-        public static unRegisterCollisionComponent( component: CollisionComponent ): void {
-            let index = CollisionManager._components.indexOf( component );
-            if ( index !== -1 ) {
-                CollisionManager._components.slice( index, 1 );
+        public static unRegisterCollisionComponent(component: CollisionComponent): void {
+            let index = CollisionManager._components.indexOf(component);
+            if (index !== -1) {
+                CollisionManager._components.slice(index, 1);
             }
         }
 
@@ -37,52 +37,51 @@
             CollisionManager._components.length = 0;
         }
 
-        public static update( time: number ): void {
+        public static update(time: number): void {
             CollisionManager._totalTime += time;
 
-            for ( let c = 0; c < CollisionManager._components.length; ++c ) {
+            for (let c = 0; c < CollisionManager._components.length; ++c) {
 
                 let comp = CollisionManager._components[c];
-                for ( let o = 0; o < CollisionManager._components.length; ++o ) {
+                for (let o = 0; o < CollisionManager._components.length; ++o) {
                     let other = CollisionManager._components[o];
 
                     // Do not check against collisions with self.
-                    if ( comp === other ) {
+                    if (comp === other) {
                         continue;
                     }
 
                     // If both shapes are static, stop detection.
-                    if ( comp.isStatic && other.isStatic ) {
+                    if (comp.isStatic && other.isStatic) {
                         continue;
                     }
 
-                    if ( comp.shape.intersects( other.shape ) ) {
+                    if (comp.shape.intersects(other.shape)) {
 
                         // We have a collision!
                         let exists: boolean = false;
-                        for ( let d = 0; d < CollisionManager._collisionData.length; ++d ) {
+                        for (let d = 0; d < CollisionManager._collisionData.length; ++d) {
                             let data = CollisionManager._collisionData[d];
 
-                            if ( ( data.a === comp && data.b === other ) || ( data.a === other && data.b === comp ) ) {
+                            if ((data.a === comp && data.b === other) || (data.a === other && data.b === comp)) {
 
                                 // We have existing data. Update it.
-                                comp.onCollisionUpdate( other );
-                                other.onCollisionUpdate( comp );
+                                comp.onCollisionUpdate(other);
+                                other.onCollisionUpdate(comp);
                                 data.time = CollisionManager._totalTime;
                                 exists = true;
                                 break;
                             }
                         }
 
-                        if ( !exists ) {
+                        if (!exists) {
 
                             // Create a new collision.
-                            let col = new CollisionData( CollisionManager._totalTime, comp, other );
-                            comp.onCollisionEntry( other );
-                            other.onCollisionEntry( comp );
-                            Message.sendPriority( "COLLISION_ENTRY:" + comp.name, this, col );
-                            Message.sendPriority( "COLLISION_ENTRY:" + other.name, this, col );
-                            this._collisionData.push( col );
+                            let col = new CollisionData(CollisionManager._totalTime, comp, other);
+                            comp.onCollisionEntry(other);
+                            other.onCollisionEntry(comp);
+                            Message.sendPriority("COLLISION_ENTRY", undefined, col);
+                            CollisionManager._collisionData.push(col);
                         }
                     }
                 }
@@ -90,25 +89,24 @@
 
             // Remove stale collision data.
             let removeData: CollisionData[] = [];
-            for ( let d = 0; d < CollisionManager._collisionData.length; ++d ) {
+            for (let d = 0; d < CollisionManager._collisionData.length; ++d) {
                 let data = CollisionManager._collisionData[d];
-                if ( data.time !== CollisionManager._totalTime ) {
+                if (data.time !== CollisionManager._totalTime) {
 
                     // Old collision data.
-                    removeData.push( data );
+                    removeData.push(data);
                 }
             }
 
-            while ( removeData.length !== 0 ) {
+            while (removeData.length !== 0) {
 
                 let data = removeData.shift();
-                let index = CollisionManager._collisionData.indexOf( data );
-                CollisionManager._collisionData.splice( index, 1 );
+                let index = CollisionManager._collisionData.indexOf(data);
+                CollisionManager._collisionData.splice(index, 1);
 
-                data.a.onCollisionExit( data.b );
-                data.b.onCollisionExit( data.a );
-                Message.sendPriority( "COLLISION_EXIT:" + data.a.name, this, data );
-                Message.sendPriority( "COLLISION_EXIT:" + data.b.name, this, data );
+                data.a.onCollisionExit(data.b);
+                data.b.onCollisionExit(data.a);
+                Message.sendPriority("COLLISION_EXIT", undefined, data);
             }
         }
     }
