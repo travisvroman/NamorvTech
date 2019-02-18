@@ -1,0 +1,23 @@
+{
+  "name": "namorvtech",
+  "version": "1.0.0",
+  "description": "NamorvTech Game Engine",
+  "main": "index.js",
+  "scripts": {
+    "build": "build.bat",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/travisvroman/TS-Engine-Tutorial.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/travisvroman/TS-Engine-Tutorial/issues"
+  },
+  "homepage": "https://github.com/travisvroman/TS-Engine-Tutorial#readme",
+  "devDependencies": {
+    "typescript": "^3.3.3"
+  }
+}

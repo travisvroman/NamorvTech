@@ -1,15 +1,16 @@
-# TS-Engine-Tutorial
+# NamorvTech Game Engine
 TypeScript Game Engine Tutorial
 
 This project is the source code generated as part of my tutorial series on YouTube. Follow along and subscribe!
+
+Since this project is based on WebGL, which means it is used in the browser, it uses AMD instead of CommonJS, with the outFile option when built. This means standard imports will not work. Instead, reference tags should be used by games including this library.
 
 ## Playlist on YouTube:
 https://www.youtube.com/playlist?list=PLv8Ddw9K0JPiTHLMQw31Yh4qyTAcHRnJx
 
 # Projects Using this Engine
 - StupidDuck - (FlappyBird Clone, 2D)
-- TBD - (Vehicle Combat Game, 3D)
-- TBD - (Networked RPG, 3D)
+- TBD - 
 
 ## Items to do:
 - Asset loader error handling

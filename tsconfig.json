@@ -4,8 +4,11 @@
         "noImplicitAny": true,
         "removeComments": true,
         "preserveConstEnums": true,
-        "outFile": "main.js",
+        "outFile": "./dist/NTMain.js",
+        "outDir": "./dist",
         "sourceMap": true,
+        "declaration": true,
+        "declarationMap": true,
         "target": "es5"
     },
     "include": [
