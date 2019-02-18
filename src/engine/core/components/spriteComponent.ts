@@ -3,6 +3,9 @@
 
 namespace NT {
 
+    /**
+     * The data for a sprite component.
+     */
     export class SpriteComponentData implements IComponentData {
         public name: string;
         public materialName: string;
@@ -33,6 +36,9 @@ namespace NT {
         }
     }
 
+    /**
+     * The builder for a sprite component.
+     */
     export class SpriteComponentBuilder implements IComponentBuilder {
 
         public get type(): string {
@@ -46,12 +52,19 @@ namespace NT {
         }
     }
 
+    /**
+     * A component which renders a two-dimensional image on the screen.
+     */
     export class SpriteComponent extends BaseComponent {
 
         private _sprite: Sprite;
         private _width: number;
         private _height: number;
 
+        /**
+         * Creates a new SpriteComponent.
+         * @param data The data to create from.
+         */
         public constructor( data: SpriteComponentData ) {
             super( data );
 
@@ -63,11 +76,15 @@ namespace NT {
             }
         }
 
+        /** Loads this component. */
         public load(): void {
             this._sprite.load();
         }
 
-
+        /**
+         * Renders this component.
+         * @param shader The shader to use for rendering.
+         */
         public render( shader: Shader ): void {
             this._sprite.draw( shader, this.owner.worldMatrix );
 

@@ -1,6 +1,8 @@
 ﻿namespace NT {
 
-
+    /**
+     * A basic shader that can be used for 2D games.
+     */
     export class BasicShader extends Shader {
         
         public constructor() {

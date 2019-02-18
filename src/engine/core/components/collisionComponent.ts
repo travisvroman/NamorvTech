@@ -54,6 +54,9 @@ namespace NT {
         }
     }
 
+    /**
+     * A collision component. Likely to be removed when collision system is replaced.
+     */
     export class CollisionComponent extends BaseComponent {
 
         private _shape: IShape2D;

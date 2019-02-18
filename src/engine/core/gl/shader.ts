@@ -56,7 +56,11 @@
             return this._uniforms[name];
         }
 
-
+        /**
+         * Loads this shader.
+         * @param vertexSource The vertex source.
+         * @param fragmentSource The fragment source.
+         */
         protected load( vertexSource: string, fragmentSource: string): void {
             let vertexShader = this.loadShader( vertexSource, gl.VERTEX_SHADER );
             let fragmentShader = this.loadShader( fragmentSource, gl.FRAGMENT_SHADER );

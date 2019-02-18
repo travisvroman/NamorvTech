@@ -37,11 +37,18 @@
         }
     }
 
+    /**
+     * A component which renders bitmap text.
+     */
     export class BitmapTextComponent extends BaseComponent implements IMessageHandler {
 
         private _bitmapText: BitmapText;
         private _fontName: string;
 
+        /**
+         * Creates a new BitmapTextComponent.
+         * @param data The data to use for creation.
+         */
         public constructor(data: BitmapTextComponentData) {
             super(data);
             this._fontName = data.fontName;
@@ -56,19 +63,32 @@
             Message.subscribe(this.name + ":SetText", this);
         }
 
+        /** Loads this component. */
         public load(): void {
             this._bitmapText.load();
         }
 
+        /**
+         * Updates this component.
+         * @param time The amount of time in milliseconds since the last update.
+         */
         public update(time: number): void {
             this._bitmapText.update(time);
         }
 
+        /**
+         * Renders this component.
+         * @param shader The shader to use for rendering.
+         */
         public render(shader: Shader): void {
             this._bitmapText.draw(shader, this.owner.worldMatrix);
             super.render(shader);
         }
 
+        /**
+         * The message handler.
+         * @param message The message to be handled.
+         */
         public onMessage(message: Message): void {
             if (message.code === this.name + ":SetText") {
                 this._bitmapText.text = String(message.context);
