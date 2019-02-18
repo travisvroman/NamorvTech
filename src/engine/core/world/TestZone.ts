@@ -1,6 +1,6 @@
 ﻿///// <reference path="zone.ts" />
 
-//namespace TSE {
+//namespace NT {
 
 
 //    export class TestZone extends Zone {

@@ -1,5 +1,8 @@
-﻿namespace TSE {
+﻿namespace NT {
 
+    /**
+     * The message code prefix for asset load notifications.
+     */
     export const MESSAGE_ASSET_LOADER_ASSET_LOADED = "MESSAGE_ASSET_LOADER_ASSET_LOADED::";
 
     /** Manages all assets in the engine. */

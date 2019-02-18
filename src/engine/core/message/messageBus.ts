@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
     /** The message manager responsible for sending messages across the system. */
     export class MessageBus {

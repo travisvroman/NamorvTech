@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
     export class BitmapTextComponentData implements IComponentData {
         public name: string;

@@ -1,5 +1,5 @@
 ﻿
-namespace TSE {
+namespace NT {
 
     /** Represents a 2-component vector. */
     export class Vector2 {

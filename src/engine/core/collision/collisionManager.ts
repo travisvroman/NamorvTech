@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
     export class CollisionData {
         public a: CollisionComponent;
@@ -12,6 +12,7 @@
         }
     }
 
+    /** NOTE: This collision manager is likely going to be replaced, so not commenting it for now. */
     export class CollisionManager {
 
         private static _totalTime: number = 0;

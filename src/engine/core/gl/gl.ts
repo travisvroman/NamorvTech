@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
     /**
      * The WebGL rendering context.

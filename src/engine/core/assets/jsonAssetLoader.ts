@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
     /** Represents an Json asset */
     export class JsonAsset implements IAsset {

@@ -2,7 +2,7 @@
 /// <reference path="spritecomponent.ts" />
 /// <reference path="basecomponent.ts" />
 
-namespace TSE {
+namespace NT {
 
     export class AnimatedSpriteComponentData extends SpriteComponentData implements IComponentData {
 

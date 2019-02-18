@@ -12,10 +12,11 @@
         "target": "es5"
     },
     "include": [
-        "**/*"
+        "**/*.ts"
     ],
     "exclude": [
         "node_modules",
-        "**/*.spec.ts"
+        "**/*.spec.ts",
+        "**/*.d.ts"
     ]
 }

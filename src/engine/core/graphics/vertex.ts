@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
     /**
      * Represents the data for a single vertex.

@@ -1,6 +1,6 @@
 ﻿/// <reference path="../math/vector2.ts" />
 
-namespace TSE {
+namespace NT {
 
     export enum Keys {
         LEFT = 37,

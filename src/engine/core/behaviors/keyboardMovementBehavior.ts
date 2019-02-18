@@ -1,12 +1,27 @@
 ﻿/// <reference path="basebehavior.ts" />
 /// <reference path="behaviormanager.ts" />
 
-namespace TSE {
+namespace NT {
 
+    /**
+     * Represents the data used to configure this behavior.
+     */
     export class KeyboardMovementBehaviorData implements IBehaviorData {
+
+        /**
+         * The name of this behavior.
+         */
         public name: string;
+
+        /**
+         * The movement speed to be applied when a key is held down. Default: 0.1
+         */
         public speed: number = 0.1;
 
+        /**
+         * Sets the properties of this data from the provided JSON.
+         * @param json The json to set from.
+         */
         public setFromJson( json: any ): void {
             if ( json.name === undefined ) {
                 throw new Error( "Name must be defined in behavior data." );
@@ -20,11 +35,22 @@ namespace TSE {
         }
     }
 
+    /**
+     * The builder for a KeyboardMovement behavior.
+     */
     export class KeyboardMovementBehaviorBuilder implements IBehaviorBuilder {
+
+        /**
+         * The behavior type.
+         */
         public get type(): string {
             return "keyboardMovement";
         }
 
+        /**
+         * Builds a behavior from the provided json.
+         * @param json The json to build from.
+         */
         public buildFromJson( json: any ): IBehavior {
             let data = new KeyboardMovementBehaviorData();
             data.setFromJson( json );
@@ -32,16 +58,31 @@ namespace TSE {
         }
     }
 
+    /**
+     * A behavior which, when a key is held down, moves the object to which it is attached
+     * at the rate of the configured speed.
+     */
     export class KeyboardMovementBehavior extends BaseBehavior {
 
+        /**
+         * The speed a which to move.
+         */
         public speed: number = 0.1; 
 
+        /**
+         * Creates a new KeyboardMovementBehavior.
+         * @param data The data for this behavior.
+         */
         public constructor( data: KeyboardMovementBehaviorData ) {
             super( data );
 
             this.speed = data.speed;
         }
 
+        /**
+         * Performs update procedures on this component.
+         * @param time The delta time in milliseconds since the last update.
+         */
         public update( time: number ): void {
             if ( InputManager.isKeyDown( Keys.LEFT ) ) {
                 this._owner.transform.position.x -= this.speed;
@@ -60,5 +101,6 @@ namespace TSE {
         }
     }
 
+    // Auto-registers the builder.
     BehaviorManager.registerBuilder( new KeyboardMovementBehaviorBuilder() );
 }

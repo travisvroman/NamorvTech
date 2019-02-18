@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
     /** A 4x4 matrix to be used for transformations. */
     export class Matrix4x4 {

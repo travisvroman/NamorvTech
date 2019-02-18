@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
     export class VisibilityOnMessageBehaviorData implements IBehaviorData {
         public name: string;
@@ -33,11 +33,18 @@
         }
     }
 
+    /**
+     * A behavior which enables or disables visibility when the configured message is recieved.
+     */
     export class VisibilityOnMessageBehavior extends BaseBehavior implements IMessageHandler {
 
         private _messageCode: string;
         private _visible: boolean;
 
+        /**
+         * Creates a new VisibilityOnMessageBehavior.
+         * @param data The data for this behavior.
+         */
         public constructor(data: VisibilityOnMessageBehaviorData) {
             super(data);
 
@@ -47,6 +54,10 @@
             Message.subscribe(this._messageCode, this);
         }
 
+        /**
+         * The message handler.
+         * @param message The message to be handled.
+         */
         public onMessage(message: Message): void {
             if (message.code === this._messageCode) {
                 this._owner.isVisible = this._visible;

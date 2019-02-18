@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
     class TextureReferenceNode {
         public texture: Texture;

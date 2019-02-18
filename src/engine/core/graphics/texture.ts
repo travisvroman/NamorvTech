@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
     const LEVEL: number = 0;
     const BORDER: number = 0;

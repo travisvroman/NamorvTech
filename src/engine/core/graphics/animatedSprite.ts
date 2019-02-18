@@ -1,6 +1,6 @@
 ﻿/// <reference path="sprite.ts" />
 
-namespace TSE {
+namespace NT {
 
     class UVInfo {
         public min: Vector2;

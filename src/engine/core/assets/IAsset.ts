@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
     /** Represents an asset */
     export interface IAsset {

@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
     /** Represents message priorities. */
     export enum MessagePriority {

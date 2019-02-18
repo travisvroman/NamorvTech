@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
     export class Rectangle2D implements IShape2D {
 

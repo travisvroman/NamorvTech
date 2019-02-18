@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
     export interface IShape2D {
 

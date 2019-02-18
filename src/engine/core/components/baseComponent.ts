@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
 
     export abstract class BaseComponent implements IComponent {

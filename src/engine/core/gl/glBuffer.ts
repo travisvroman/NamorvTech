@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
     /**
      * Represents the information needed for a GLBuffer attribute.

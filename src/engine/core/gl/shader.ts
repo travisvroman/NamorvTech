@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
     /**
      * Represents a WebGL shader.

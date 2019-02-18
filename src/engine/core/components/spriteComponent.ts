@@ -1,7 +1,7 @@
 ﻿/// <reference path="componentmanager.ts" />
 /// <reference path="basecomponent.ts" />
 
-namespace TSE {
+namespace NT {
 
     export class SpriteComponentData implements IComponentData {
         public name: string;

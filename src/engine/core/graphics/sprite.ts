@@ -1,4 +1,4 @@
-﻿namespace TSE {
+﻿namespace NT {
 
     /**
      * Represents a 2-dimensional sprite which is drawn on the screen.
