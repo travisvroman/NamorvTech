@@ -19,7 +19,7 @@
 
             if ( elementId !== undefined ) {
                 canvas = document.getElementById( elementId ) as HTMLCanvasElement;
-                if ( canvas === undefined ) {
+                if ( canvas === null ) {
                     throw new Error( "Cannot find a canvas element named:" + elementId );
                 }
             } else {
