@@ -6,9 +6,9 @@
         "preserveConstEnums": true,
         "outFile": "./dist/NTMain.js",
         "outDir": "./dist",
-        "sourceMap": true,
+        //"sourceMap": true,
         "declaration": true,
-        "declarationMap": true,
+        //"declarationMap": true,
         "target": "es5"
     },
     "include": [

@@ -3,10 +3,10 @@
 namespace NT {
 
     /** The message code for mouse down events. */
-    const MESSAGE_MOUSE_DOWN: string = "MOUSE_DOWN";
+    export const MESSAGE_MOUSE_DOWN: string = "MOUSE_DOWN";
 
     /** The message code for mouse up events. */
-    const MESSAGE_MOUSE_UP: string = "MOUSE_UP";
+    export const MESSAGE_MOUSE_UP: string = "MOUSE_UP";
 
     /** Defines key codes for keyboard keys. */
     export enum Keys {

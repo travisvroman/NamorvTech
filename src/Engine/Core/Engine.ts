@@ -39,6 +39,7 @@
             InputManager.initialize( this._canvas );
             LevelManager.initialize();
 
+            Message.subscribe( MESSAGE_MOUSE_UP, this );
             gl.clearColor( 146 / 255, 206 / 255, 247 / 255, 1 );
             gl.enable( gl.BLEND );
             gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
@@ -122,7 +123,7 @@
          * @param message The message to be handled.
          */
         public onMessage( message: Message ): void {
-            if ( message.code === "MOUSE_UP" ) {
+            if ( message.code === MESSAGE_MOUSE_UP ) {
                 let context = message.context as MouseContext;
                 document.title = `Pos: [${context.position.x},${context.position.y}]`;
             }

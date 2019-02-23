@@ -87,7 +87,7 @@ namespace NT {
             this._width = data.width;
             this._height = data.height;
             this._messageCode = data.messageCode;
-            Message.subscribe( "MOUSE_UP", this );
+            Message.subscribe( MESSAGE_MOUSE_UP, this );
         }
 
         /**
@@ -95,7 +95,7 @@ namespace NT {
          * @param message The message to be handled.
          */
         public onMessage( message: Message ): void {
-            if ( message.code === "MOUSE_UP " ) {
+            if ( message.code === MESSAGE_MOUSE_UP ) {
                 if ( !this._owner.isVisible ) {
                     return;
                 }
