@@ -68,6 +68,10 @@
             return m;
         }
 
+        /**
+         * Creates a rotation matrix on the X axis from the provided angle in radians.
+         * @param angleInRadians The angle in radians.
+         */
         public static rotationX( angleInRadians: number ): Matrix4x4 {
             let m = new Matrix4x4();
 
@@ -82,6 +86,10 @@
             return m;
         }
 
+        /**
+         * Creates a rotation matrix on the Y axis from the provided angle in radians.
+         * @param angleInRadians The angle in radians.
+         */
         public static rotationY( angleInRadians: number ): Matrix4x4 {
             let m = new Matrix4x4();
 
@@ -96,6 +104,10 @@
             return m;
         }
 
+        /**
+         * Creates a rotation matrix on the Z axis from the provided angle in radians.
+         * @param angleInRadians The angle in radians.
+         */
         public static rotationZ( angleInRadians: number ): Matrix4x4 {
             let m = new Matrix4x4();
 
@@ -110,6 +122,12 @@
             return m;
         }
 
+        /**
+         * Creates a rotation matrix from the provided angles in radians.
+         * @param xRadians The angle in radians on the X axis. 
+         * @param yRadians The angle in radians on the Y axis. 
+         * @param zRadians The angle in radians on the Z axis. 
+         */
         public static rotationXYZ( xRadians: number, yRadians: number, zRadians: number ): Matrix4x4 {
             let rx = Matrix4x4.rotationX( xRadians );
             let ry = Matrix4x4.rotationY( yRadians );
@@ -119,7 +137,10 @@
             return Matrix4x4.multiply( Matrix4x4.multiply( rz, ry ), rx );
         }
 
-
+        /**
+         * Creates a scale matrix.
+         * @param scale The scale to use.
+         */
         public static scale( scale: Vector3 ): Matrix4x4 {
             let m = new Matrix4x4();
 
@@ -130,6 +151,11 @@
             return m;
         }
 
+        /**
+         * Multiplies matrix a by matrix b and returns the result.
+         * @param a The first matrix.
+         * @param b The second matrix.
+         */
         public static multiply( a: Matrix4x4, b: Matrix4x4 ): Matrix4x4 {
             let m = new Matrix4x4();
 
@@ -191,6 +217,10 @@
             return new Float32Array( this._data );
         }
 
+        /**
+         * Creates a copy of matrix m.
+         * @param m The matrix to copy.
+         */
         public copyFrom( m: Matrix4x4 ): void {
             for ( let i = 0; i < 16; ++i ) {
                 this._data[i] = m._data[i];

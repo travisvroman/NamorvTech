@@ -1,7 +1,7 @@
 ﻿namespace NT {
 
     /**
-     * Components are renderable objects which are attached to SimObjects in the world.
+     * Components are renderable objects which are attached to TEntities in the world.
      * These components inherit the transforms of the object to which they are attached.
      */
     export interface IComponent {
@@ -11,14 +11,14 @@
          */
         name: string;
 
-        /** The owning object. */
-        readonly owner: SimObject;
+        /** The owning entity. */
+        readonly owner: TEntity;
 
         /**
          * Sets the owner of this component.
          * @param owner The owner to be set.
          */
-        setOwner( owner: SimObject ): void;
+        setOwner( owner: TEntity ): void;
 
         /** Performs pre-update procedures on this component. */
         updateReady(): void;

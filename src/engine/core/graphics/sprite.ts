@@ -30,32 +30,42 @@
             this._material = MaterialManager.getMaterial( this._materialName );
         }
 
+        /** The name of this sprite. */
         public get name(): string {
             return this._name;
         }
 
+        /** The origin location of this sprite. */
         public get origin(): Vector3 {
             return this._origin;
         }
 
+        /** The name of this sprite. */
         public set origin( value: Vector3 ) {
             this._origin = value;
             this.recalculateVertices();
         }
 
+        /** The width of this sprite. */
         public get width(): number {
             return this._width;
         }
 
+        /** The height of this sprite. */
         public get height(): number {
             return this._height;
         }
 
+        /** Performs destruction routines on this sprite. */
         public destroy(): void {
-            this._buffer.destroy();
-            MaterialManager.releaseMaterial( this._materialName );
-            this._material = undefined;
-            this._materialName = undefined;
+            if ( this._buffer ) {
+                this._buffer.destroy();
+            }
+            if ( this._material ) {
+                MaterialManager.releaseMaterial( this._materialName );
+                this._material = undefined;
+                this._materialName = undefined;
+            }
         }
 
         /**
@@ -85,7 +95,11 @@
 
         }
 
-        /** Draws this sprite. */
+        /**
+         * Draws this sprite.
+         * @param shader The shader to draw with.
+         * @param model The model transformation matrix.
+         */
         public draw( shader: Shader, model: Matrix4x4 ): void {
 
             let modelLocation = shader.getUniformLocation( "u_model" );
@@ -104,6 +118,7 @@
             this._buffer.draw();
         }
 
+        /** Calculates the vertices for this sprite. */
         protected calculateVertices(): void {
             let minX = -( this._width * this._origin.x );
             let maxX = this._width * ( 1.0 - this._origin.x );
@@ -131,6 +146,7 @@
             this._buffer.unbind();
         }
 
+        /** Recalculates the vertices for this sprite. */
         protected recalculateVertices(): void {
 
             let minX = -( this._width * this._origin.x );

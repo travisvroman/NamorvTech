@@ -3,8 +3,8 @@
 
     export abstract class BaseComponent implements IComponent {
 
-        /** The owning object. */
-        protected _owner: SimObject;
+        /** The owning entity. */
+        protected _owner: TEntity;
         protected _data: IComponentData;
 
         /**
@@ -21,8 +21,8 @@
             this.name = data.name;
         }
 
-        /** The owning object. */
-        public get owner(): SimObject {
+        /** The owning entity. */
+        public get owner(): TEntity {
             return this._owner;
         }
 
@@ -30,7 +30,7 @@
          * Sets the owner of this component.
          * @param owner The owner to be set.
          */
-        public setOwner( owner: SimObject ): void {
+        public setOwner( owner: TEntity ): void {
             this._owner = owner;
         }
 

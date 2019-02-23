@@ -11,10 +11,10 @@ namespace NT {
         /** The name of this behavior. */
         public name: string;
 
-        /** The width of the area to be registered as a click, relative to the SimObject to which this is attached. */
+        /** The width of the area to be registered as a click, relative to the TEntity to which this is attached. */
         public width: number;
 
-        /** The height of the area to be registered as a click, relative to the SimObject to which this is attached. */
+        /** The height of the area to be registered as a click, relative to the TEntity to which this is attached. */
         public height: number;
 
         /** The message code to be sent when a click is detected. */

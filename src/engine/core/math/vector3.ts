@@ -50,19 +50,32 @@ namespace NT {
             this._z = value;
         }
 
+        /** Returns a vector3 with all components set to 0. */
         public static get zero(): Vector3 {
             return new Vector3();
         }
 
+        /** Returns a vector3 with all components set to 1. */
         public static get one(): Vector3 {
             return new Vector3( 1, 1, 1 );
         }
 
+        /**
+         * Calculates the difference between vector a and vector b.
+         * @param a The first vector.
+         * @param b The second vector.
+         */
         public static distance( a: Vector3, b: Vector3 ): number {
             let diff = a.subtract( b );
             return Math.sqrt( diff.x * diff.x + diff.y * diff.y + diff.z * diff.z );
         }
 
+        /**
+         * Sets the x, y and z components of this vector.
+         * @param x The x component value.
+         * @param y The y component value.
+         * @param z The z component value.
+         */
         public set( x?: number, y?: number, z?: number ): void {
             if ( x !== undefined ) {
                 this._x = x;
@@ -95,12 +108,25 @@ namespace NT {
             return new Float32Array( this.toArray() );
         }
 
+        /** Converts this vector to a Vector2 by dropping the Z component. */
+        public toVector2(): Vector2 {
+            return new Vector2( this._x, this._y );
+        }
+
+        /**
+         * Copies the contents of the provided vector to this vector.
+         * @param vector The vector to be copied.
+         */
         public copyFrom( vector: Vector3 ): void {
             this._x = vector._x;
             this._y = vector._y;
             this._z = vector._z;
         }
 
+        /**
+         * Sets the values of this vector from the provided JSON.
+         * @param json The JSON to set from.
+         */
         public setFromJson( json: any ): void {
             if ( json.x !== undefined ) {
                 this._x = Number( json.x );
@@ -115,6 +141,10 @@ namespace NT {
             }
         }
 
+        /**
+         * Adds the provided vector to this vector.
+         * @param v The vector to be added.
+         */
         public add( v: Vector3 ): Vector3 {
             this._x += v._x;
             this._y += v._y;
@@ -123,6 +153,10 @@ namespace NT {
             return this;
         }
 
+        /**
+         * Subtracts the provided vector from this vector.
+         * @param v The vector to be subtracted.
+         */
         public subtract( v: Vector3 ): Vector3 {
             this._x -= v._x;
             this._y -= v._y;
@@ -131,6 +165,10 @@ namespace NT {
             return this;
         }
 
+        /**
+         * Multiplies this vector by the provided vector.
+         * @param v The vector to be multiplied by.
+         */
         public multiply( v: Vector3 ): Vector3 {
             this._x *= v._x;
             this._y *= v._y;
@@ -139,6 +177,10 @@ namespace NT {
             return this;
         }
 
+        /**
+         * Divides this vector by the provided vector.
+         * @param v The vector to be divided by.
+         */
         public divide( v: Vector3 ): Vector3 {
             this._x /= v._x;
             this._y /= v._y;
@@ -147,12 +189,20 @@ namespace NT {
             return this;
         }
 
-        public clone(): Vector3 {
-            return new Vector3( this._x, this._y, this._z );
+        /**
+         * Scales this vector by the provided number.
+         */
+        public scale( scale: number ): Vector3 {
+            this._x *= scale;
+            this._y *= scale;
+            this._z *= scale;
+
+            return this;
         }
 
-        public toVector2(): Vector2 {
-            return new Vector2( this._x, this._y );
+        /** Clones this vector. */
+        public clone(): Vector3 {
+            return new Vector3( this._x, this._y, this._z );
         }
     }
 }

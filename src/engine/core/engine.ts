@@ -37,7 +37,7 @@
             }
             AssetManager.initialize();
             InputManager.initialize( this._canvas );
-            ZoneManager.initialize();
+            LevelManager.initialize();
 
             gl.clearColor( 146 / 255, 206 / 255, 247 / 255, 1 );
             gl.enable( gl.BLEND );
@@ -153,7 +153,7 @@
             }
 
             // Load up our zone. TODO: make this configurable.
-            ZoneManager.changeZone( 0 );
+            LevelManager.changeLevel( "test" );
 
             // Kick off the render loop.
             this.loop();
@@ -163,7 +163,7 @@
             let delta = performance.now() - this._previousTime;
 
             MessageBus.update( delta );
-            ZoneManager.update( delta );
+            LevelManager.update( delta );
             CollisionManager.update( delta );
 
             this._previousTime = performance.now();
@@ -172,7 +172,7 @@
         private render(): void {
             gl.clear( gl.COLOR_BUFFER_BIT );
 
-            ZoneManager.render( this._basicShader );
+            LevelManager.render( this._basicShader );
             // Set uniforms.
             let projectionPosition = this._basicShader.getUniformLocation( "u_projection" );
             gl.uniformMatrix4fv( projectionPosition, false, new Float32Array( this._projection.data ) );

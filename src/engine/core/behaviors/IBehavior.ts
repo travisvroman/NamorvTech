@@ -1,7 +1,7 @@
 ﻿namespace NT {
 
     /**
-     * Represents a behavior, which can be attached to a SimObject. Behaviors do not get rendered, 
+     * Represents a behavior, which can be attached to a TEntity. Behaviors do not get rendered, 
      * but affect the object they are attached to in some way. Behaviors may apply themselves either
      * during the update call or directly using apply(), depending on the behavior itself.
      */
@@ -14,7 +14,7 @@
          * Sets the owner of this behavior.
          * @param owner The owner.
          */
-        setOwner( owner: SimObject ): void;
+        setOwner( owner: TEntity ): void;
 
         /**
          * Performs pre-update procedures on this behavior.

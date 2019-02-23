@@ -13,9 +13,9 @@
         protected _data: IBehaviorData;
 
         /**
-         * The owning object of this behavior.
+         * The owning entity of this behavior.
          */
-        protected _owner: SimObject;
+        protected _owner: TEntity;
 
         /**
          * Creates a new base behavior.
@@ -27,10 +27,10 @@
         }
 
         /**
-         * Sets the owner object.
+         * Sets the owner entity.
          * @param owner The owner.
          */
-        public setOwner( owner: SimObject ): void {
+        public setOwner( owner: TEntity ): void {
             this._owner = owner;
         }
 

@@ -1,6 +1,23 @@
 ﻿interface Math {
+
+    /**
+     * Returns value within the range of min/max.
+     * @param value The value to be clamped.
+     * @param min The minimum value.
+     * @param max The maximum value.
+     */
     clamp( value: number, min: number, max: number ): number;
+
+    /**
+     * Returns the provided rotation in radians.
+     * @param degrees The rotation in degrees.
+     */
     degToRad( degrees: number ): number;
+
+    /**
+     * Returns the provided rotation in degrees.
+     * @param degrees The rotation in radians.
+     */
     radToDeg( radians: number ): number;
 }
 
