@@ -5,23 +5,34 @@
      * so that they may be loaded on demand. Register a level name
      * with a file path and load the level configurations dynamically.
      */
-    export class LevelManager implements IMessageHandler {
+    export class LevelManager {
 
-        private static _registeredZones: { [name: string]: string } = {};
+        private static _registeredLevels: { [name: string]: string } = {};
         private static _activeLevel: Level;
-        private static _inst: LevelManager;
+        private static _configLoaded: boolean = false;
 
         /** Private constructor to enforce singleton pattern. */
         private constructor() {
         }
 
-        /** Initializes this manager. */
-        public static initialize(): void {
-            LevelManager._inst = new LevelManager();
+        /** Indicates if this manager is loaded. */
+        public static get isLoaded(): boolean {
+            return LevelManager._configLoaded;
+        }
 
+        /** Loads this manager. */
+        public static load(): void {
 
-            // TODO: TEMPORARY
-            LevelManager._registeredZones["test"] = "assets/zones/testZone.json";
+            // Get the asset(s). TODO: This probably should come from a central asset manifest.
+            let asset = AssetManager.getAsset( "assets/levels/levels.json" );
+            if ( asset !== undefined ) {
+                LevelManager.processLevelConfigAsset( asset as JsonAsset );
+            } else {
+
+                // Listen for the asset load.
+                Message.subscribeCallback( MESSAGE_ASSET_LOADER_ASSET_LOADED + "assets/levels/levels.json",
+                    LevelManager.onMessage );
+            }
         }
 
         /**
@@ -36,19 +47,19 @@
             }
 
             // Make sure the level is registered.
-            if ( LevelManager._registeredZones[name] !== undefined ) {
+            if ( LevelManager._registeredLevels[name] !== undefined ) {
 
                 // If the level asset is already loaded, get it and use it to load the level.
                 // Otherwise, retrieve the asset and load the level upon completion.
-                if ( AssetManager.isAssetLoaded( LevelManager._registeredZones[name] ) ) {
-                    let asset = AssetManager.getAsset( LevelManager._registeredZones[name] );
+                if ( AssetManager.isAssetLoaded( LevelManager._registeredLevels[name] ) ) {
+                    let asset = AssetManager.getAsset( LevelManager._registeredLevels[name] );
                     LevelManager.loadLevel( asset );
                 } else {
-                    Message.subscribe( MESSAGE_ASSET_LOADER_ASSET_LOADED + LevelManager._registeredZones[name], LevelManager._inst );
-                    AssetManager.loadAsset( LevelManager._registeredZones[name] );
+                    Message.subscribeCallback( MESSAGE_ASSET_LOADER_ASSET_LOADED + LevelManager._registeredLevels[name], LevelManager.onMessage );
+                    AssetManager.loadAsset( LevelManager._registeredLevels[name] );
                 }
             } else {
-                throw new Error( "Zone named:" + name + " is not registered." );
+                throw new Error( "Level named:" + name + " is not registered." );
             }
         }
 
@@ -77,7 +88,22 @@
          * @param message The message to be handled.
          */
         public onMessage( message: Message ): void {
-            if ( message.code.indexOf( MESSAGE_ASSET_LOADER_ASSET_LOADED ) !== -1 ) {
+
+        }
+
+        /**
+         * The message handler.
+         * @param message The message to be handled.
+         */
+        public static onMessage( message: Message ): void {
+
+            // TODO: one for each asset.
+            if ( message.code === MESSAGE_ASSET_LOADER_ASSET_LOADED + "assets/levels/levels.json" ) {
+                Message.unsubscribeCallback( MESSAGE_ASSET_LOADER_ASSET_LOADED + "assets/levels/levels.json",
+                    LevelManager.onMessage );
+
+                LevelManager.processLevelConfigAsset( message.context as JsonAsset );
+            } else if ( message.code.indexOf( MESSAGE_ASSET_LOADER_ASSET_LOADED ) !== -1 ) {
                 console.log( "Level loaded:" + message.code );
                 let asset = message.context as JsonAsset;
                 LevelManager.loadLevel( asset );
@@ -105,8 +131,25 @@
             LevelManager._activeLevel.onActivated();
             LevelManager._activeLevel.load();
 
-            
-            Message.send( "GAME_READY", this );
+
+            Message.send( "LEVEL_LOADED", this );
+        }
+
+        private static processLevelConfigAsset( asset: JsonAsset ): void {
+
+            let levels = asset.data.levels;
+            if ( levels ) {
+                for ( let level of levels ) {
+                    if ( level.name !== undefined && level.file !== undefined ) {
+                        LevelManager._registeredLevels[level.name] = String( level.file );
+                    } else {
+                        throw new Error( "Invalid level config file format: name or file is missing" );
+                    }
+                }
+            }
+
+            // TODO: Should only set this if ALL queued assets have loaded.
+            LevelManager._configLoaded = true;
         }
     }
 }

@@ -65,7 +65,16 @@
          * @param handler The message handler to be called when a message containing the provided code is sent.
          */
         public static subscribe( code: string, handler: IMessageHandler ): void {
-            MessageBus.addSubscription( code, handler );
+            MessageBus.addSubscription( code, handler, undefined );
+        }
+
+        /**
+         * Subscribes the provided callback to listen for the message code provided.
+         * @param code The code to listen for.
+         * @param callback The message callback to be invoked when a message containing the provided code is sent.
+         */
+        public static subscribeCallback( code: string, callback: MessageCallback ): void {
+            MessageBus.addSubscription( code, undefined, callback );
         }
 
         /**
@@ -74,7 +83,16 @@
          * @param handler The message handler to unsubscribe.
          */
         public static unsubscribe( code: string, handler: IMessageHandler ): void {
-            MessageBus.removeSubscription( code, handler );
+            MessageBus.removeSubscription( code, handler, undefined );
+        }
+
+        /**
+         * Unsubscribes the provided callback from listening for the message code provided.
+         * @param code The code to no longer listen for.
+         * @param callback The message callback to unsubscribe.
+         */
+        public static unsubscribeCallback( code: string, callback: MessageCallback ): void {
+            MessageBus.removeSubscription( code, undefined, callback );
         }
     }
 }

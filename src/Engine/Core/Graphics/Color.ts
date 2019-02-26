@@ -99,6 +99,27 @@
             return new Float32Array( this.toFloatArray() );
         }
 
+        /**
+         * Creates a new color from the provided JSON.
+         * @param json The JSON to create from.
+         */
+        public static fromJson( json: any ): Color {
+            let c = new Color();
+            if ( json.r !== undefined ) {
+                c.r = Number( json.r );
+            }
+            if ( json.g !== undefined ) {
+                c.g = Number( json.g );
+            }
+            if ( json.b !== undefined ) {
+                c.b = Number( json.b );
+            }
+            if ( json.a !== undefined ) {
+                c.a = Number( json.a );
+            }
+            return c;
+        }
+
         /** Gets the color white. */
         public static white(): Color {
             return new Color( 255, 255, 255, 255 );

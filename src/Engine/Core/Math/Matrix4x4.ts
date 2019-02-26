@@ -55,6 +55,28 @@
         }
 
         /**
+         * Creates and returns a new perspective projection matrix.
+         * @param fov The field of view in radians.
+         * @param aspect The aspect ratio.
+         * @param nearClip The near clipping plane distance.
+         * @param farClip The far clipping plane distance.
+         */
+        public static perspective( fov: number, aspect: number, nearClip: number, farClip: number ): Matrix4x4 {
+            let f = 1.0 / Math.tan( fov / 2.0 );
+            let rangeInv = 1.0 / ( nearClip - farClip );
+
+            // data
+            let m = new Matrix4x4();
+            m._data = [
+                f / aspect, 0, 0, 0,
+                0, f, 0, 0,
+                0, 0, ( nearClip + farClip ) * rangeInv, -1.0,
+                0, 0, nearClip * farClip * rangeInv * 2.0, 0.0
+            ];
+            return m;
+        }
+
+        /**
          * Creates a transformation matrix using the provided position.
          * @param position The position to be used in transformation.
          */

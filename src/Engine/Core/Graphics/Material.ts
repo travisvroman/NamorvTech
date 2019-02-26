@@ -25,6 +25,16 @@
             }
         }
 
+        /**
+         * Creates a material from the provided configuration.
+         * @param config The configuration to create a material from.
+         */
+        public static FromConfig( config: MaterialConfig ): Material {
+            let m = new Material( config.name, config.diffuse, config.tint );
+
+            return m;
+        }
+
         /** The name of this material. */
         public get name(): string {
             return this._name;
