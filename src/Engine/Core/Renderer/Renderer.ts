@@ -40,6 +40,17 @@ namespace NT {
             let projectionPosition = this._basicShader.getUniformLocation( "u_projection" );
             let projection = this._windowViewport.GetProjectionMatrix().toFloat32Array();
             gl.uniformMatrix4fv( projectionPosition, false, projection );
+
+            // Use the active camera's matrix as the view
+            let view: Matrix4x4;
+            if ( LevelManager.isLoaded && LevelManager.activeLevelActiveCamera !== undefined ) {
+                view = LevelManager.activeLevelActiveCamera.view;
+            } else {
+                view = Matrix4x4.identity();
+            }
+            let viewPosition = this._basicShader.getUniformLocation( "u_view" );
+            gl.uniformMatrix4fv( viewPosition, false, view.toFloat32Array() );
+
         }
     }
 }

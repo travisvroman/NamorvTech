@@ -20,6 +20,15 @@
             return LevelManager._configLoaded;
         }
 
+        /** Gets the active camera for the active level. */
+        public static get activeLevelActiveCamera(): BaseCamera {
+            if ( LevelManager._activeLevel !== undefined && LevelManager._activeLevel.isLoaded ) {
+                return LevelManager._activeLevel.activeCamera;
+            }
+
+            return undefined;
+        }
+
         /** Loads this manager. */
         public static load(): void {
 

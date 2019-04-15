@@ -27,6 +27,9 @@
         private _description: string;
         private _sceneGraph: SceneGraph;
         private _state: LevelState = LevelState.UNINITIALIZED;
+        private _registeredCameras: Dictionary<BaseCamera> = {};
+        private _activeCamera: BaseCamera;
+        private _defaultCameraName: string;
 
         /**
          * Creates a new level.
@@ -55,6 +58,16 @@
             return this._sceneGraph;
         }
 
+        /** The currently active camera. */
+        public get activeCamera(): BaseCamera {
+            return this._activeCamera;
+        }
+
+        /** Indicates if this level is loaded. */
+        public get isLoaded(): boolean {
+            return this._state === LevelState.UPDATING;
+        }
+
         /**
          * Performs initialization routines on this level.
          * @param jsonData The JSON-formatted data to initialize this level with.
@@ -62,6 +75,10 @@
         public initialize( jsonData: any ): void {
             if ( jsonData.objects === undefined ) {
                 throw new Error( "Zone initialization error: objects not present." );
+            }
+
+            if ( jsonData.defaultCamera !== undefined ) {
+                this._defaultCameraName = String( jsonData.defaultCamera );
             }
 
             for ( let o in jsonData.objects ) {
@@ -78,7 +95,30 @@
             this._sceneGraph.load();
             this._sceneGraph.root.updateReady();
 
+            // Get registered cameras. If there aren't any, register one automatically.
+            // Otherwise, look for the first one and make it active.
+            // TODO: Add active camera to level config, assign by name.
+            if ( this._defaultCameraName !== undefined ) {
+                let obj = this._sceneGraph.getEntityByName( this._defaultCameraName );
+                if ( obj === undefined ) {
+                    throw new Error( "Default camera not found:" + this._defaultCameraName );
+                } else {
+                    // NOTE: If detected, the camera should already be registered at this point.
+                }
+            } else {
+                let cameraKeys = Object.keys( this._registeredCameras );
+                if ( cameraKeys.length > 0 ) {
+                    this._activeCamera = this._registeredCameras[cameraKeys[0]];
+                } else {
+                    let defaultCamera = new PerspectiveCamera( "DEFAULT_CAMERA", this._sceneGraph );
+                    this._sceneGraph.addObject( defaultCamera );
+                    this.registerCamera( defaultCamera );
+                    this._activeCamera = defaultCamera;
+                }
+            }
+
             this._state = LevelState.UPDATING;
+
         }
 
         /** Unloads this level. */
@@ -115,6 +155,39 @@
         }
 
         /**
+         * Registers the provided camera with this level. Automatically sets as the active camera
+         * if no active camera is currently set.
+         * @param camera The camera to register.
+         */
+        public registerCamera( camera: BaseCamera ): void {
+            if ( this._registeredCameras[camera.name] === undefined ) {
+                this._registeredCameras[camera.name] = camera;
+                if ( this._activeCamera === undefined ) {
+                    this._activeCamera = camera;
+                }
+            } else {
+                console.warn( "A camera named '" + camera.name + "' has already been registered. New camera not registered." );
+            }
+        }
+
+        /**
+         * Unregisters the provided camera with this level.
+         * @param camera The camera to unregister.
+         */
+        public unregisterCamera( camera: BaseCamera ): void {
+            if ( this._registeredCameras[camera.name] !== undefined ) {
+                this._registeredCameras[camera.name] = undefined;
+                if ( this._activeCamera === camera ) {
+
+                    // NOTE: auto-activate the next camera in line?
+                    this._activeCamera = undefined;
+                }
+            } else {
+                console.warn( "No camera named '" + camera.name + "' hsd been registered. Camera not unregistered." );
+            }
+        }
+
+        /**
          * Loads an ertity using the data section provided. Attaches to the provided parent.
          * @param dataSection The data section to load from.
          * @param parent The parent object to attach to.
@@ -126,7 +199,20 @@
                 name = String( dataSection.name );
             }
 
-            let entity = new TEntity( name, this._sceneGraph );
+            let entity: TEntity;
+
+            // TODO: Use factories
+            if ( dataSection.type !== undefined ) {
+                if ( dataSection.type = "perspectiveCamera" ) {
+                    entity = new PerspectiveCamera( name, this._sceneGraph );
+                    this.registerCamera( entity as BaseCamera );
+                } else {
+                    throw new Error( "Unsupported type " + dataSection.type );
+                }
+            } else {
+                entity = new TEntity( name, this._sceneGraph );
+            }
+
 
             if ( dataSection.transform !== undefined ) {
                 entity.transform.setFromJson( dataSection.transform );

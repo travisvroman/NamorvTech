@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/travisvroman/TS-Engine-Tutorial.git"
+    "url": "git+https://github.com/travisvroman/NamorvTech.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/travisvroman/TS-Engine-Tutorial/issues"
+    "url": "https://github.com/travisvroman/NamorvTech/issues"
   },
-  "homepage": "https://github.com/travisvroman/TS-Engine-Tutorial#readme",
+  "homepage": "https://github.com/travisvroman/NamorvTech#readme",
   "devDependencies": {
     "child-process": "^1.0.2",
     "fs-extra": "^7.0.1",
