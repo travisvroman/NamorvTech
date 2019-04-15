@@ -4,7 +4,7 @@
   "description": "NamorvTech Game Engine",
   "main": "index.js",
   "scripts": {
-    "build": "build.bat",
+    "build": "node build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/travisvroman/TS-Engine-Tutorial#readme",
   "devDependencies": {
+    "child-process": "^1.0.2",
+    "fs-extra": "^7.0.1",
     "typescript": "^3.3.3"
   }
 }
