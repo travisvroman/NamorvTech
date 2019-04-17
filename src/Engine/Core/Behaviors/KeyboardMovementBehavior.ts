@@ -1,5 +1,5 @@
-﻿/// <reference path="basebehavior.ts" />
-/// <reference path="behaviormanager.ts" />
+﻿/// <reference path="BaseBehavior.ts" />
+/// <reference path="BehaviorManager.ts" />
 
 namespace NT {
 

@@ -1,4 +1,4 @@
-﻿/// <reference path="../math/Vector2.ts" />
+﻿/// <reference path="../Math/Vector2.ts" />
 
 namespace NT {
 
