@@ -8,11 +8,7 @@ console.log("Cleaning...");
 fsExtra.emptyDirSync("dist");
 
 console.log("Building...");
-var result;
 try {
-    result = cp.execSync("node node_modules/typescript/bin/tsc", {
-        stdio: "inherit"
-    });
     console.log("\x1b[35m***BUILD COMPLETE***\x1b[0m");
 } catch (ex) {
     console.log(ex.stdout);
