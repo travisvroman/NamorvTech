@@ -83,12 +83,18 @@
         }
 
         /**
-         * Renders the level with the provided shader.
-         * @param shader The shader to render with.
+         * Renders the level.
          */
-        public static render( shader: Shader ): void {
+        public static render( projection: Matrix4x4 ): void {
             if ( LevelManager._activeLevel !== undefined ) {
-                LevelManager._activeLevel.render( shader );
+                let view: Matrix4x4;
+                if ( LevelManager.isLoaded && LevelManager.activeLevelActiveCamera !== undefined ) {
+                    view = LevelManager.activeLevelActiveCamera.view;
+                } else {
+                    view = Matrix4x4.identity();
+                }
+
+                LevelManager._activeLevel.render( view, projection );
             }
         }
 

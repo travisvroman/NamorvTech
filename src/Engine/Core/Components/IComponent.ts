@@ -34,8 +34,7 @@
 
         /**
          * Renders this component.
-         * @param shader The shader to use for rendering.
          */
-        render( shader: Shader ): void;
+        render( view: Matrix4x4, projection: Matrix4x4 ): void;
     }
 }

@@ -53,11 +53,10 @@
         }
 
         /**
-         * Renders this scene graph using the provided shader.
-         * @param shader The shader to use when rendering.
+         * Renders this scene graph.
          */
-        public render( shader: Shader ): void {
-            this._root.render( shader );
+        public render( view: Matrix4x4, projection: Matrix4x4 ): void {
+            this._root.render( view, projection );
         }
     }
 }

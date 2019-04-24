@@ -6,21 +6,21 @@
         public origin: Vector3 = Vector3.zero;
         public text: string;
 
-        public setFromJson(json: any): void {
-            if (json.name !== undefined) {
-                this.name = String(json.name);
+        public setFromJson( json: any ): void {
+            if ( json.name !== undefined ) {
+                this.name = String( json.name );
             }
 
-            if (json.fontName !== undefined) {
-                this.fontName = String(json.fontName);
+            if ( json.fontName !== undefined ) {
+                this.fontName = String( json.fontName );
             }
 
-            if (json.text !== undefined) {
-                this.text = String(json.text);
+            if ( json.text !== undefined ) {
+                this.text = String( json.text );
             }
 
-            if (json.origin !== undefined) {
-                this.origin.setFromJson(json.origin);
+            if ( json.origin !== undefined ) {
+                this.origin.setFromJson( json.origin );
             }
         }
     }
@@ -30,10 +30,10 @@
             return "bitmapText";
         }
 
-        public buildFromJson(json: any): IComponent {
+        public buildFromJson( json: any ): IComponent {
             let data = new BitmapTextComponentData();
-            data.setFromJson(json);
-            return new BitmapTextComponent(data);
+            data.setFromJson( json );
+            return new BitmapTextComponent( data );
         }
     }
 
@@ -49,18 +49,18 @@
          * Creates a new BitmapTextComponent.
          * @param data The data to use for creation.
          */
-        public constructor(data: BitmapTextComponentData) {
-            super(data);
+        public constructor( data: BitmapTextComponentData ) {
+            super( data );
             this._fontName = data.fontName;
-            this._bitmapText = new BitmapText(this.name, this._fontName);
-            if (!data.origin.equals(Vector3.zero)) {
-                this._bitmapText.origin.copyFrom(data.origin);
+            this._bitmapText = new BitmapText( this.name, this._fontName );
+            if ( !data.origin.equals( Vector3.zero ) ) {
+                this._bitmapText.origin.copyFrom( data.origin );
             }
 
             this._bitmapText.text = data.text;
 
             // Listen for text updates.
-            Message.subscribe(this.name + ":SetText", this);
+            Message.subscribe( this.name + ":SetText", this );
         }
 
         /** Loads this component. */
@@ -72,29 +72,29 @@
          * Updates this component.
          * @param time The amount of time in milliseconds since the last update.
          */
-        public update(time: number): void {
-            this._bitmapText.update(time);
+        public update( time: number ): void {
+            this._bitmapText.update( time );
         }
 
         /**
          * Renders this component.
          * @param shader The shader to use for rendering.
          */
-        public render(shader: Shader): void {
-            this._bitmapText.draw(shader, this.owner.worldMatrix);
-            super.render(shader);
+        public render( view: Matrix4x4, projection: Matrix4x4 ): void {
+            this._bitmapText.draw( this.owner.worldMatrix, view, projection );
+            super.render( view, projection );
         }
 
         /**
          * The message handler.
          * @param message The message to be handled.
          */
-        public onMessage(message: Message): void {
-            if (message.code === this.name + ":SetText") {
-                this._bitmapText.text = String(message.context);
+        public onMessage( message: Message ): void {
+            if ( message.code === this.name + ":SetText" ) {
+                this._bitmapText.text = String( message.context );
             }
         }
     }
 
-    ComponentManager.registerBuilder(new BitmapTextComponentBuilder());
+    ComponentManager.registerBuilder( new BitmapTextComponentBuilder() );
 }

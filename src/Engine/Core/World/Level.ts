@@ -138,11 +138,10 @@
 
         /**
          * Renders this level.
-         * @param shader The shader to use when rendering.
          */
-        public render( shader: Shader ): void {
+        public render( view: Matrix4x4, projection: Matrix4x4 ): void {
             if ( this._state === LevelState.UPDATING ) {
-                this._sceneGraph.render( shader );
+                this._sceneGraph.render( view, projection );
             }
         }
 

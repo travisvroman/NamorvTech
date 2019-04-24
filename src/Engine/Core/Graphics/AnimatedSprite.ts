@@ -198,7 +198,7 @@ namespace NT {
             let yValue: number = 0;
             for ( let i = 0; i < this._frameCount; ++i ) {
 
-                totalWidth += i * this._frameWidth;
+                totalWidth = i * this._frameWidth;
                 if ( totalWidth > this._assetWidth ) {
                     yValue++;
                     totalWidth = 0;

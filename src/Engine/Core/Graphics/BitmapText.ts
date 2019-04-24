@@ -70,7 +70,12 @@
         public load(): void {
             this._bitmapFont = BitmapFontManager.getFont( this._fontName );
 
-            this._material = new Material( `BITMAP_FONT_${this.name}_${this._bitmapFont.size}`, this._bitmapFont.textureName, Color.white() );
+            // TODO: probably need a simpler shader for UI elements such as this.
+            let shader = ShaderManager.GetShader( BuiltinShader.BASIC );
+            if ( shader === undefined ) {
+                throw new Error( "Unable to basic builtin shader." );
+            }
+            this._material = new Material( `BITMAP_FONT_${this.name}_${this._bitmapFont.size}`, shader, this._bitmapFont.textureName, Color.white() );
 
             this._buffer = new GLBuffer();
 
@@ -100,19 +105,11 @@
          * Draws this object.
          * @param shader The shader to use for drawing.
          * @param model The model transformation matrix.
+         * @param view The view transformation matrix.
+         * @param projection The projection transformation matrix.
          */
-        public draw( shader: Shader, model: Matrix4x4 ): void {
-            let modelLocation = shader.getUniformLocation( "u_model" );
-            gl.uniformMatrix4fv( modelLocation, false, model.toFloat32Array() );
-
-            let colorLocation = shader.getUniformLocation( "u_tint" );
-            gl.uniform4fv( colorLocation, this._material.tint.toFloat32Array() );
-
-            if ( this._material.diffuseTexture !== undefined ) {
-                this._material.diffuseTexture.activateAndBind( 0 );
-                let diffuseLocation = shader.getUniformLocation( "u_diffuse" );
-                gl.uniform1i( diffuseLocation, 0 );
-            }
+        public draw( model: Matrix4x4, view: Matrix4x4, projection: Matrix4x4 ): void {
+            this._material.Apply( model, view, projection );
 
             this._buffer.bind();
             this._buffer.draw();

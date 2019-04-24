@@ -217,19 +217,18 @@ namespace NT {
 
         /**
          * Renders this entity and its children.
-         * @param shader The shader to use when rendering/
          */
-        public render( shader: Shader ): void {
+        public render( view: Matrix4x4, projection: Matrix4x4 ): void {
             if ( !this._isVisible ) {
                 return;
             }
 
             for ( let c of this._components ) {
-                c.render( shader );
+                c.render( view, projection );
             }
 
             for ( let c of this._children ) {
-                c.render( shader );
+                c.render( view, projection );
             }
         }
 

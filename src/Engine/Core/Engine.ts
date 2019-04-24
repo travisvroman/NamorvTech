@@ -47,11 +47,9 @@
             this._renderer = new Renderer( rendererViewportCreateInfo );
 
             // Initialize various sub-systems.
-            AssetManager.initialize();
-            InputManager.initialize( this._renderer.windowViewportCanvas );
-
-            // Initialize the renderer.
-            this._renderer.Initialize();
+            AssetManager.Initialize();
+            ShaderManager.Initialize();
+            InputManager.Initialize( this._renderer.windowViewportCanvas );
 
             // Load fonts
             BitmapFontManager.load();
@@ -116,7 +114,7 @@
             }
 
             // Perform items such as loading the first/initial level, etc.
-            this._game.updateReady();
+            this._game.UpdateReady();
 
             // Kick off the render loop.
             this.loop();
@@ -129,7 +127,7 @@
             LevelManager.update( delta );
             CollisionManager.update( delta );
 
-            this._game.update( delta );
+            this._game.Update( delta );
 
             this._previousTime = performance.now();
         }
@@ -137,9 +135,10 @@
         private render(): void {
             this._renderer.BeginRender();
 
-            LevelManager.render( this._renderer.worldShader );
 
-            this._game.render( this._renderer.worldShader );
+            LevelManager.render( this._renderer.Projection );
+
+            this._game.Render();
 
             this._renderer.EndRender();
         }

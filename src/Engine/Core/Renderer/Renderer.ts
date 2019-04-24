@@ -4,8 +4,6 @@ namespace NT {
 
         private _windowViewport: RendererViewport;
 
-        private _basicShader: BasicShader;
-
         public constructor( createInfo: RendererViewportCreateInfo ) {
             this._windowViewport = new RendererViewport( createInfo );
 
@@ -15,14 +13,8 @@ namespace NT {
             return this._windowViewport.canvas;
         }
 
-        public get worldShader(): Shader {
-            return this._basicShader;
-        }
-
-        public Initialize(): void {
-
-            this._basicShader = new BasicShader();
-            this._basicShader.use();
+        public get Projection(): Matrix4x4 {
+            return this._windowViewport.GetProjectionMatrix();
         }
 
         public Resize(): void {
@@ -36,20 +28,6 @@ namespace NT {
         }
 
         public EndRender(): void {
-            // Set uniforms.
-            let projectionPosition = this._basicShader.getUniformLocation( "u_projection" );
-            let projection = this._windowViewport.GetProjectionMatrix().toFloat32Array();
-            gl.uniformMatrix4fv( projectionPosition, false, projection );
-
-            // Use the active camera's matrix as the view
-            let view: Matrix4x4;
-            if ( LevelManager.isLoaded && LevelManager.activeLevelActiveCamera !== undefined ) {
-                view = LevelManager.activeLevelActiveCamera.view;
-            } else {
-                view = Matrix4x4.identity();
-            }
-            let viewPosition = this._basicShader.getUniformLocation( "u_view" );
-            gl.uniformMatrix4fv( viewPosition, false, view.toFloat32Array() );
 
         }
     }

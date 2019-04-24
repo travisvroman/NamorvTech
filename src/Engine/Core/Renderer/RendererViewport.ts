@@ -89,7 +89,7 @@ namespace NT {
                 this._sizeMode = ViewportSizeMode.FIXED;
             }
 
-            this._canvas = GLUtilities.initialize( createInfo.elementId );
+            this._canvas = GLUtilities.Initialize( createInfo.elementId );
 
             // GL init
             gl.clearColor( 146 / 255, 206 / 255, 247 / 255, 1 );

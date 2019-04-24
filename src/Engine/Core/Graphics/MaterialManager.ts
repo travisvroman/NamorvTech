@@ -26,6 +26,9 @@
         /** The name of this material. */
         public name: string;
 
+        /** The name of the shader used by this material. Default: undefined (BuiltinShader.BASIC) */
+        public shader?: string;
+
         /** The diffuse texture path of this material. */
         public diffuse: string;
 
@@ -39,6 +42,10 @@
             let config = new MaterialConfig();
             if ( json.name !== undefined ) {
                 config.name = String( json.name );
+            }
+
+            if ( json.shader !== undefined ) {
+                config.shader = String( json.shader );
             }
 
             if ( json.diffuse !== undefined ) {

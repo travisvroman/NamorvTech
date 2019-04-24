@@ -1,5 +1,9 @@
 ﻿namespace NT {
 
+    export enum BuiltinShader {
+        BASIC = "basic"
+    }
+
     /**
      * Represents a WebGL shader.
      * */
@@ -19,6 +23,13 @@
         }
 
         /**
+         * Destroys this shader.
+         */
+        public destroy(): void {
+
+        }
+
+        /**
          * The name of this shader.
          */
         public get name(): string {
@@ -30,6 +41,36 @@
          * */
         public use(): void {
             gl.useProgram( this._program );
+        }
+
+        public SetUniformMatrix4x4( uniformName: string, matrix: Matrix4x4 ): void {
+            if ( this._uniforms[name] === undefined ) {
+                console.warn( `Unable to find uniform named '${name}' in shader named '${this._name}'` );
+                return;
+            }
+
+            let position = this.getUniformLocation( uniformName );
+            gl.uniformMatrix4fv( position, false, matrix.toFloat32Array() );
+        }
+
+        public SetUniformColor( uniformName: string, color: Color ): void {
+            if ( this._uniforms[name] === undefined ) {
+                console.warn( `Unable to find uniform named '${name}' in shader named '${this._name}'` );
+                return;
+            }
+
+            let position = this.getUniformLocation( uniformName );
+            gl.uniform4fv( position, color.toFloat32Array() );
+        }
+
+        public SetUniformInt( uniformName: string, value: number ): void {
+            if ( this._uniforms[name] === undefined ) {
+                console.warn( `Unable to find uniform named '${name}' in shader named '${this._name}'` );
+                return;
+            }
+
+            let position = this.getUniformLocation( uniformName );
+            gl.uniform1i( position, value );
         }
 
         /**
@@ -57,11 +98,16 @@
         }
 
         /**
+         * Applies standard uniforms to this shader.
+         */
+        public abstract ApplyStandardUniforms( material: Material, model: Matrix4x4, view: Matrix4x4, projection: Matrix4x4 ): void;
+
+        /**
          * Loads this shader.
          * @param vertexSource The vertex source.
          * @param fragmentSource The fragment source.
          */
-        protected load( vertexSource: string, fragmentSource: string): void {
+        protected load( vertexSource: string, fragmentSource: string ): void {
             let vertexShader = this.loadShader( vertexSource, gl.VERTEX_SHADER );
             let fragmentShader = this.loadShader( fragmentSource, gl.FRAGMENT_SHADER );
 

@@ -97,22 +97,11 @@
 
         /**
          * Draws this sprite.
-         * @param shader The shader to draw with.
          * @param model The model transformation matrix.
          */
-        public draw( shader: Shader, model: Matrix4x4 ): void {
+        public draw( model: Matrix4x4, view: Matrix4x4, projection: Matrix4x4 ): void {
 
-            let modelLocation = shader.getUniformLocation( "u_model" );
-            gl.uniformMatrix4fv( modelLocation, false, model.toFloat32Array() );
-
-            let colorLocation = shader.getUniformLocation( "u_tint" );
-            gl.uniform4fv( colorLocation, this._material.tint.toFloat32Array() );
-
-            if ( this._material.diffuseTexture !== undefined ) {
-                this._material.diffuseTexture.activateAndBind( 0 );
-                let diffuseLocation = shader.getUniformLocation( "u_diffuse" );
-                gl.uniform1i( diffuseLocation, 0 );
-            }
+            this._material.Apply( model, view, projection );
 
             this._buffer.bind();
             this._buffer.draw();

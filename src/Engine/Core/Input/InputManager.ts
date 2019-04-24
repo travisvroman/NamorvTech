@@ -60,7 +60,7 @@ namespace NT {
          * Initializes the input manager.
          * @param viewport The canvas element to attach input events to
          */
-        public static initialize( viewport: HTMLCanvasElement ): void {
+        public static Initialize( viewport: HTMLCanvasElement ): void {
             for ( let i = 0; i < 255; ++i ) {
                 InputManager._keys[i] = false;
             }

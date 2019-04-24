@@ -143,12 +143,11 @@ namespace NT {
 
         /**
          * Performs rendering procedures on this component.
-         * @param shader The shader to use for rendering.
          */
-        public render( shader: Shader ): void {
-            this._sprite.draw( shader, this.owner.worldMatrix );
+        public render( view: Matrix4x4, projection: Matrix4x4 ): void {
+            this._sprite.draw( this.owner.worldMatrix, view, projection );
 
-            super.render( shader );
+            super.render( view, projection );
         }
 
         /** Plays the animation this component. */

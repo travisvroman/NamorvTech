@@ -14,7 +14,7 @@
          * Initializes WebGL, potentially using the canvas with an assigned id matching the provided if it is defined.
          * @param elementId The id of the elment to search for.
          */
-        public static initialize( elementId?: string ): HTMLCanvasElement {
+        public static Initialize( elementId?: string ): HTMLCanvasElement {
             let canvas: HTMLCanvasElement;
 
             if ( elementId !== undefined ) {

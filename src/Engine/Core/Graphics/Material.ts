@@ -6,17 +6,20 @@
         private _name: string;
         private _diffuseTextureName: string;
 
+        private _shader: Shader;
         private _diffuseTexture: Texture;
         private _tint: Color;
 
         /**
          * Creates a new material.
          * @param name The name of this material.
+         * @param shader The shader used by this material.
          * @param diffuseTextureName The name of the diffuse texture.
          * @param tint The color value of the tint to apply to the material.
          */
-        public constructor( name: string, diffuseTextureName: string, tint: Color ) {
+        public constructor( name: string, shader: Shader, diffuseTextureName: string, tint: Color ) {
             this._name = name;
+            this._shader = shader;
             this._diffuseTextureName = diffuseTextureName;
             this._tint = tint;
 
@@ -30,9 +33,22 @@
          * @param config The configuration to create a material from.
          */
         public static FromConfig( config: MaterialConfig ): Material {
-            let m = new Material( config.name, config.diffuse, config.tint );
+            let name = config.shader ? config.shader : BuiltinShader.BASIC;
+            let shader = ShaderManager.GetShader( name );
+            if ( shader === undefined ) {
+                throw new Error( "Unable to create material using material named ${name} as it is undefined." );
+            }
+            return new Material( config.name, shader, config.diffuse, config.tint );
+        }
 
-            return m;
+        /**
+         * Applies this material.
+         * @param model The model matrix to be applied.
+         * @param view The view matrix to be applied.
+         * @param projection The projection matrix to be applied.
+         */
+        public Apply( model: Matrix4x4, view: Matrix4x4, projection: Matrix4x4 ): void {
+            this._shader.ApplyStandardUniforms( this, model, view, projection );
         }
 
         /** The name of this material. */
