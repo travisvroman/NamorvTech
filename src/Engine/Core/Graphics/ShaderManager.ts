@@ -26,6 +26,7 @@ namespace NT {
     export class ShaderManager {
 
         private static _shaders: Dictionary<ShaderReferenceNode> = {};
+        private static _activeShader: Shader;
 
         /** Private to enforce singleton pattern. */
         private constructor() {
@@ -36,6 +37,16 @@ namespace NT {
 
             // Load builtin shaders.
             ShaderManager.Register( new BasicShader() );
+        }
+
+        public static get ActiveShader(): Shader {
+            return ShaderManager._activeShader;
+        }
+
+        public static set ActiveShader( value: Shader ) {
+            if ( ShaderManager._activeShader !== value ) {
+                ShaderManager._activeShader = value;
+            }
         }
 
         /**

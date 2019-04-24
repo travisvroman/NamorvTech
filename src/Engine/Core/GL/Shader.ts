@@ -40,12 +40,15 @@
          * Use this shader.
          * */
         public use(): void {
-            gl.useProgram( this._program );
+            if ( ShaderManager.ActiveShader !== this ) {
+                gl.useProgram( this._program );
+                ShaderManager.ActiveShader = this;
+            }
         }
 
         public SetUniformMatrix4x4( uniformName: string, matrix: Matrix4x4 ): void {
-            if ( this._uniforms[name] === undefined ) {
-                console.warn( `Unable to find uniform named '${name}' in shader named '${this._name}'` );
+            if ( this._uniforms[uniformName] === undefined ) {
+                console.warn( `Unable to find uniform named '${uniformName}' in shader named '${this._name}'` );
                 return;
             }
 
@@ -54,8 +57,8 @@
         }
 
         public SetUniformColor( uniformName: string, color: Color ): void {
-            if ( this._uniforms[name] === undefined ) {
-                console.warn( `Unable to find uniform named '${name}' in shader named '${this._name}'` );
+            if ( this._uniforms[uniformName] === undefined ) {
+                console.warn( `Unable to find uniform named '${uniformName}' in shader named '${this._name}'` );
                 return;
             }
 
@@ -64,8 +67,8 @@
         }
 
         public SetUniformInt( uniformName: string, value: number ): void {
-            if ( this._uniforms[name] === undefined ) {
-                console.warn( `Unable to find uniform named '${name}' in shader named '${this._name}'` );
+            if ( this._uniforms[uniformName] === undefined ) {
+                console.warn( `Unable to find uniform named '${uniformName}' in shader named '${this._name}'` );
                 return;
             }
 

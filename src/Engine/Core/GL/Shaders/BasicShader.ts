@@ -29,6 +29,7 @@
             // let viewPosition = this._basicShader.getUniformLocation( "u_view" );
             // gl.uniformMatrix4fv( viewPosition, false, view.toFloat32Array() );
             
+            this.use();
             this.SetUniformMatrix4x4( "u_model", model );
             this.SetUniformMatrix4x4( "u_view", view );
             this.SetUniformMatrix4x4( "u_projection", projection );
