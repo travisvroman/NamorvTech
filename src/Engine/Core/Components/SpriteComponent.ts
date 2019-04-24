@@ -1,5 +1,5 @@
-﻿/// <reference path="componentmanager.ts" />
-/// <reference path="basecomponent.ts" />
+﻿/// <reference path="ComponentManager.ts" />
+/// <reference path="BaseComponent.ts" />
 
 namespace NT {
 

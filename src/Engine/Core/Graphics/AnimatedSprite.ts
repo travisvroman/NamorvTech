@@ -1,4 +1,4 @@
-﻿/// <reference path="sprite.ts" />
+﻿/// <reference path="Sprite.ts" />
 
 namespace NT {
 

@@ -1,6 +1,6 @@
-﻿/// <reference path="componentmanager.ts" />
-/// <reference path="spritecomponent.ts" />
-/// <reference path="basecomponent.ts" />
+﻿/// <reference path="ComponentManager.ts" />
+/// <reference path="SpriteComponent.ts" />
+/// <reference path="BaseComponent.ts" />
 
 namespace NT {
 
