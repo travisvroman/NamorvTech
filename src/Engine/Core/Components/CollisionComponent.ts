@@ -95,10 +95,10 @@ namespace NT {
             super.update( time );
         }
 
-        public render( view: Matrix4x4, projection: Matrix4x4 ): void {
+        public render( renderView: RenderView ): void {
             //this._sprite.draw( shader, this.owner.worldMatrix );
 
-            super.render( view, projection );
+            super.render( renderView );
         }
 
         public onCollisionEntry( other: CollisionComponent ): void {

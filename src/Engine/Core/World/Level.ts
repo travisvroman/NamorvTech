@@ -139,9 +139,9 @@
         /**
          * Renders this level.
          */
-        public render( view: Matrix4x4, projection: Matrix4x4 ): void {
+        public render( renderView: RenderView ): void {
             if ( this._state === LevelState.UPDATING ) {
-                this._sceneGraph.render( view, projection );
+                this._sceneGraph.render( renderView );
             }
         }
 

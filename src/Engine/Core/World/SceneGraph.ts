@@ -55,8 +55,8 @@
         /**
          * Renders this scene graph.
          */
-        public render( view: Matrix4x4, projection: Matrix4x4 ): void {
-            this._root.render( view, projection );
+        public render( renderView: RenderView ): void {
+            this._root.render( renderView );
         }
     }
 }

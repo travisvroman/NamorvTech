@@ -52,7 +52,7 @@
         /**
          * Renders this component.
          */
-        public render( view: Matrix4x4, projection: Matrix4x4 ): void {
+        public render( renderView: RenderView ): void {
         }
     }
 }

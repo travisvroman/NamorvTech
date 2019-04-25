@@ -20,13 +20,9 @@
             return LevelManager._configLoaded;
         }
 
-        /** Gets the active camera for the active level. */
-        public static get activeLevelActiveCamera(): BaseCamera {
-            if ( LevelManager._activeLevel !== undefined && LevelManager._activeLevel.isLoaded ) {
-                return LevelManager._activeLevel.activeCamera;
-            }
-
-            return undefined;
+        /** Gets the active level. */
+        public static get activeLevel(): Level {
+            return LevelManager._activeLevel;
         }
 
         /** Loads this manager. */
@@ -70,40 +66,6 @@
             } else {
                 throw new Error( "Level named:" + name + " is not registered." );
             }
-        }
-
-        /**
-         * Updates this manager.
-         * @param time The delta time in milliseconds since the last update.
-         */
-        public static update( time: number ): void {
-            if ( LevelManager._activeLevel !== undefined ) {
-                LevelManager._activeLevel.update( time );
-            }
-        }
-
-        /**
-         * Renders the level.
-         */
-        public static render( projection: Matrix4x4 ): void {
-            if ( LevelManager._activeLevel !== undefined ) {
-                let view: Matrix4x4;
-                if ( LevelManager.isLoaded && LevelManager.activeLevelActiveCamera !== undefined ) {
-                    view = LevelManager.activeLevelActiveCamera.view;
-                } else {
-                    view = Matrix4x4.identity();
-                }
-
-                LevelManager._activeLevel.render( view, projection );
-            }
-        }
-
-        /**
-         * The message handler.
-         * @param message The message to be handled.
-         */
-        public onMessage( message: Message ): void {
-
         }
 
         /**

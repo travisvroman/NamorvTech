@@ -35,6 +35,6 @@
         /**
          * Renders this component.
          */
-        render( view: Matrix4x4, projection: Matrix4x4 ): void;
+        render( renderView: RenderView ): void;
     }
 }

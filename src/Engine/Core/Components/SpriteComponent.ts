@@ -84,10 +84,10 @@ namespace NT {
         /**
          * Renders this component.
          */
-        public render( view: Matrix4x4, projection: Matrix4x4 ): void {
-            this._sprite.draw( this.owner.worldMatrix, view, projection );
+        public render( renderView: RenderView ): void {
+            this._sprite.draw( this.owner.worldMatrix, renderView.viewMatrix, renderView.projectionMatrix );
 
-            super.render( view, projection );
+            super.render( renderView );
         }
     }
 

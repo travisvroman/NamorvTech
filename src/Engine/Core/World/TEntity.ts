@@ -218,17 +218,17 @@ namespace NT {
         /**
          * Renders this entity and its children.
          */
-        public render( view: Matrix4x4, projection: Matrix4x4 ): void {
+        public render( renderView: RenderView ): void {
             if ( !this._isVisible ) {
                 return;
             }
 
             for ( let c of this._components ) {
-                c.render( view, projection );
+                c.render( renderView );
             }
 
             for ( let c of this._children ) {
-                c.render( view, projection );
+                c.render( renderView );
             }
         }
 

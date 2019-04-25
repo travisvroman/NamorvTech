@@ -80,9 +80,9 @@
          * Renders this component.
          * @param shader The shader to use for rendering.
          */
-        public render( view: Matrix4x4, projection: Matrix4x4 ): void {
-            this._bitmapText.draw( this.owner.worldMatrix, view, projection );
-            super.render( view, projection );
+        public render( renderView: RenderView ): void {
+            this._bitmapText.draw( this.owner.worldMatrix, renderView.viewMatrix, renderView.projectionMatrix );
+            super.render( renderView );
         }
 
         /**

@@ -75,7 +75,7 @@
          * */
         public resize(): void {
             if ( this._renderer ) {
-                this._renderer.Resize();
+                this._renderer.OnResize();
             }
         }
 
@@ -87,8 +87,12 @@
 
             }
 
-            this.update();
-            this.render();
+            let delta = performance.now() - this._previousTime;
+
+            this.update( delta );
+            this.render( delta );
+
+            this._previousTime = performance.now();
 
             requestAnimationFrame( this.loop.bind( this ) );
         }
@@ -120,25 +124,21 @@
             this.loop();
         }
 
-        private update(): void {
-            let delta = performance.now() - this._previousTime;
+        private update( delta: number ): void {
 
             MessageBus.update( delta );
-            LevelManager.update( delta );
+            if ( LevelManager.isLoaded && LevelManager.activeLevel !== undefined && LevelManager.activeLevel.isLoaded ) {
+                LevelManager.activeLevel.update( delta );
+            }
             CollisionManager.update( delta );
 
             this._game.Update( delta );
-
-            this._previousTime = performance.now();
         }
 
-        private render(): void {
-            this._renderer.BeginRender();
+        private render( delta: number ): void {
+            this._renderer.BeginRender( delta, this._game );
 
 
-            LevelManager.render( this._renderer.Projection );
-
-            this._game.Render();
 
             this._renderer.EndRender();
         }
