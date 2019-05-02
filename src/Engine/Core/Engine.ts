@@ -46,6 +46,18 @@
 
             this._renderer = new Renderer( rendererViewportCreateInfo );
 
+            console.debug( `GL_VERSION:               ${gl.getParameter( gl.VERSION )}` );
+            console.debug( `GL_VENDOR:                ${gl.getParameter( gl.VENDOR )}` );
+            console.debug( `GL_RENDERER:              ${gl.getParameter( gl.RENDERER )}` );
+            console.debug( `SHADING_LANGUAGE_VERSION: ${gl.getParameter( gl.SHADING_LANGUAGE_VERSION )}` );
+
+            // Attempt to load additional information.
+            const debugRendererExtension = gl.getExtension( 'WEBGL_debug_renderer_info' );
+            if ( debugRendererExtension !== undefined && debugRendererExtension !== null ) {
+                console.debug( `UNMASKED_VENDOR_WEBGL:    ${gl.getParameter( debugRendererExtension.UNMASKED_VENDOR_WEBGL )}` );
+                console.debug( `UNMASKED_RENDERER_WEBGL:  ${gl.getParameter( debugRendererExtension.UNMASKED_RENDERER_WEBGL )}` );
+            }
+
             // Initialize various sub-systems.
             AssetManager.Initialize();
             ShaderManager.Initialize();
