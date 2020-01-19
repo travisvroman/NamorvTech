@@ -88,8 +88,8 @@
         }
 
         private static loadLevel( asset: JsonAsset ): void {
-            console.log( "Loading level:" + asset.name );
-            let data = asset.data;
+            console.log( "Loading level:" + asset.Name );
+            let data = asset.Data;
 
             let levelName: string;
             if ( data.name === undefined ) {
@@ -114,7 +114,7 @@
 
         private static processLevelConfigAsset( asset: JsonAsset ): void {
 
-            let levels = asset.data.levels;
+            let levels = asset.Data.levels;
             if ( levels ) {
                 for ( let level of levels ) {
                     if ( level.name !== undefined && level.file !== undefined ) {

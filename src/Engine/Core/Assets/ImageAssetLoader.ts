@@ -4,10 +4,10 @@
     export class ImageAsset implements IAsset {
 
         /** The name of this asset. */
-        public readonly name: string;
+        public readonly Name: string;
 
         /** The data of this asset. */
-        public readonly data: HTMLImageElement;
+        public readonly Data: HTMLImageElement;
 
         /**
          * Creates a new image asset.
@@ -15,18 +15,18 @@
          * @param data The data of this asset.
          */
         public constructor( name: string, data: HTMLImageElement ) {
-            this.name = name;
-            this.data = data;
+            this.Name = name;
+            this.Data = data;
         }
 
         /** The width of this image asset. */
         public get width(): number {
-            return this.data.width;
+            return this.Data.width;
         }
 
         /** The height of this image asset. */
         public get height(): number {
-            return this.data.height;
+            return this.Data.height;
         }
     }
 
@@ -42,7 +42,7 @@
          * Loads an asset with the given name.
          * @param assetName The name of the asset to be loaded.
          */
-        public loadAsset( assetName: string ): void {
+        public LoadAsset( assetName: string ): void {
             let extension = assetName.substring( assetName.lastIndexOf( '.' ) + 1, assetName.length ) || assetName;
 
             switch ( extension.toLowerCase() ) {

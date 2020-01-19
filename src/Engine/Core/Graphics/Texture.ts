@@ -104,7 +104,7 @@
 
             this.bind();
 
-            gl.texImage2D( gl.TEXTURE_2D, LEVEL, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, asset.data );
+            gl.texImage2D( gl.TEXTURE_2D, LEVEL, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, asset.Data );
 
             if ( this.isPowerof2() ) {
                 gl.generateMipmap( gl.TEXTURE_2D );

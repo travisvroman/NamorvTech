@@ -136,7 +136,7 @@
 
         private static processAudioConfigAsset( asset: JsonAsset ): void {
 
-            let configs = asset.data.soundEffects;
+            let configs = asset.Data.soundEffects;
             if ( configs ) {
                 for ( let config of configs ) {
                     let a = AudioConfig.fromJson( config );

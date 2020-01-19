@@ -105,7 +105,7 @@
 
         private static processFontAsset( asset: JsonAsset ): void {
 
-            let fonts = asset.data.bitmapFonts;
+            let fonts = asset.Data.bitmapFonts;
             if ( fonts ) {
                 for ( let font of fonts ) {
                     let f = BitmapFontConfig.fromJson( font );

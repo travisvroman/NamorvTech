@@ -122,7 +122,7 @@
         public load(): void {
             let asset = AssetManager.getAsset( this._fontFileName );
             if ( asset !== undefined ) {
-                this.processFontFile( asset.data );
+                this.processFontFile( asset.Data );
             } else {
                 Message.subscribe( MESSAGE_ASSET_LOADER_ASSET_LOADED + this._fontFileName, this );
             }
@@ -133,7 +133,7 @@
          */
         public onMessage( message: Message ): void {
             if ( message.code === MESSAGE_ASSET_LOADER_ASSET_LOADED + this._fontFileName ) {
-                this.processFontFile( ( message.context as TextAsset ).data );
+                this.processFontFile( ( message.context as TextAsset ).Data );
             }
         }
 

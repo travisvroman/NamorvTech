@@ -10,6 +10,6 @@
          * Loads an asset with the given name.
          * @param assetName The name of the asset to be loaded.
          */
-        loadAsset( assetName: string ): void;
+        LoadAsset( assetName: string ): void;
     }
 }

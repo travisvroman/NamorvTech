@@ -142,7 +142,7 @@
             if ( LevelManager.isLoaded && LevelManager.activeLevel !== undefined && LevelManager.activeLevel.isLoaded ) {
                 LevelManager.activeLevel.update( delta );
             }
-            CollisionManager.update( delta );
+            //CollisionManager.update( delta );
 
             this._game.Update( delta );
         }

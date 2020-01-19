@@ -167,7 +167,7 @@
 
         private static processMaterialAsset( asset: JsonAsset ): void {
 
-            let materials = asset.data.materials;
+            let materials = asset.Data.materials;
             if ( materials ) {
                 for ( let material of materials ) {
                     let c = MaterialConfig.fromJson( material );

@@ -6,10 +6,10 @@
     export class TextAsset implements IAsset {
 
         /** The name of this asset. */
-        public readonly name: string;
+        public readonly Name: string;
 
         /** The content of this asset. */
-        public readonly data: string;
+        public readonly Data: string;
 
         /**
          * Creates a new text asset.
@@ -17,8 +17,8 @@
          * @param data The content of this asset.
          */
         public constructor(name: string, data: string) {
-            this.name = name;
-            this.data = data;
+            this.Name = name;
+            this.Data = data;
         }
     }
 
@@ -38,7 +38,7 @@
          * Loads a text asset with the provided name.
          * @param assetName The asset to be loaded.
          */
-        public loadAsset(assetName: string): void {
+        public LoadAsset(assetName: string): void {
             let request = new XMLHttpRequest();
             request.open("GET", assetName);
             request.addEventListener("load", this.onTextLoaded.bind(this, assetName, request));

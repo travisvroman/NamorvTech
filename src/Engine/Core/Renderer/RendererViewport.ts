@@ -92,7 +92,8 @@ namespace NT {
             this._canvas = GLUtilities.Initialize( createInfo.elementId );
 
             // GL init
-            gl.clearColor( 146 / 255, 206 / 255, 247 / 255, 1 );
+            //gl.clearColor( 146 / 255, 206 / 255, 247 / 255, 1 );
+            gl.clearColor( 0, 0, 0.2, 1 );
             gl.enable( gl.BLEND );
             gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
 
